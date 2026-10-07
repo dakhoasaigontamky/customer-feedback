@@ -31,6 +31,7 @@ header p{margin:8px 0 0;font-size:14.5px;opacity:.95}
 .meta b{color:var(--ink);font-weight:600}
 .q{padding:22px 0;border-bottom:1px solid var(--line)}
 .q:last-of-type{border-bottom:0}
+.submit{border-top:1px solid var(--line)}
 .qh{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start}
 .qn{width:28px;height:28px;border-radius:50%;background:var(--mint);color:var(--brand-deep);font-weight:700;font-size:14px;display:grid;place-items:center;margin-top:1px}
 .qt{font-weight:600;font-size:16.5px;margin:0}
@@ -63,8 +64,8 @@ select:focus-visible,textarea:focus-visible,input:focus-visible,button:focus-vis
 .missing .nps span,.missing .opt span,.missing select{border-color:var(--red)}
 .miss-msg{display:none;color:var(--red);font-size:13.5px;margin-top:8px}
 .missing .miss-msg{display:block}
-.contact{background:var(--panel);border-radius:14px;padding:18px 16px;margin:6px 0 4px}
-.contact h2{font-size:16px;margin:0 0 2px}
+.contact{background:var(--panel);border-radius:14px;padding:18px 16px;margin:16px 0 4px}
+.contact h2{font-size:16px;margin:0 0 12px}
 .contact .sub{font-size:13.5px;color:var(--muted);margin:0 0 12px}
 .contact label.f{display:block;font-size:14px;font-weight:500;margin:0 0 12px}
 .contact label.f input{margin-top:5px}
@@ -97,6 +98,14 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:0 0 28px}
 <form id="f" novalidate>
   <div class="meta"><span>Ngày khảo sát: <b id="today"></b> <span>(tự động)</span></span></div>
 
+  <section class="contact" aria-labelledby="ctTitle">
+    <h2 id="ctTitle">Thông tin liên hệ</h2>
+    <label class="f">Họ và tên người bệnh<input type="text" id="ho_ten" maxlength="120" autocomplete="name"></label>
+    <label class="f" style="margin-bottom:0">Số điện thoại<input type="tel" id="sdt" maxlength="15" inputmode="tel" autocomplete="tel"></label>
+    <p class="note">Thông tin bạn cung cấp được Bệnh viện lưu giữ để ghi nhận và xử lý góp ý.</p>
+    <div class="miss-msg" id="sdtMsg" style="margin-top:6px">Số điện thoại chưa đúng, vui lòng kiểm tra lại hoặc để trống.</div>
+  </section>
+
   <div class="q" id="q-khoa">
     <div class="qh"><div class="qn" aria-hidden="true">•</div><div><p class="qt"><label for="khoa">Khoa / Phòng khám Ông/Bà đang sử dụng dịch vụ</label> <span class="req">*</span></p></div></div>
     <div class="body"><select id="khoa" required><option value="">Chọn khoa / phòng khám</option></select>
@@ -116,20 +125,6 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:0 0 28px}
     <div class="qh"><div class="qn" aria-hidden="true">5</div><div><p class="qt"><label for="gop_y">Ông/Bà có điều gì chưa hài lòng hoặc có góp ý gì để bệnh viện phục vụ tốt hơn trong những lần khám sau không?</label></p></div></div>
     <div class="body"><textarea id="gop_y" maxlength="2000" placeholder="Nhập ý kiến của Ông/Bà (không bắt buộc)"></textarea></div>
   </div>
-
-  <div class="q" id="q-gk">
-    <div class="qh"><div class="qn" aria-hidden="true">6</div><div><p class="qt"><label for="gop_y_khac">Quý khách hàng có góp ý gì khác ngoài các nội dung trên:</label></p></div></div>
-    <div class="body"><textarea id="gop_y_khac" maxlength="2000" placeholder="Nhập góp ý khác (không bắt buộc)"></textarea></div>
-  </div>
-
-  <section class="contact" aria-labelledby="ctTitle">
-    <h2 id="ctTitle">Thông tin liên hệ</h2>
-    <p class="sub">Không bắt buộc. Để lại nếu Ông/Bà muốn bệnh viện phản hồi.</p>
-    <label class="f">Họ và tên người bệnh<input type="text" id="ho_ten" maxlength="120" autocomplete="name"></label>
-    <label class="f" style="margin-bottom:0">Số điện thoại<input type="tel" id="sdt" maxlength="15" inputmode="tel" autocomplete="tel"></label>
-    <p class="note">Thông tin bạn cung cấp được Bệnh viện lưu giữ để ghi nhận và xử lý góp ý.</p>
-    <div class="miss-msg" id="sdtMsg" style="margin-top:6px">Số điện thoại chưa đúng, vui lòng kiểm tra lại hoặc để trống.</div>
-  </section>
 
   <div class="hp" aria-hidden="true"><label>Không điền ô này<input type="text" id="hp" tabindex="-1" autocomplete="off"></label></div>
 
@@ -205,7 +200,7 @@ $("sdt").addEventListener("input", ()=>$("sdtMsg").style.display = "none");
 $("f").onsubmit = async e=>{
   e.preventDefault(); $("sendErr").hidden = true;
   const data = { khoa:$("khoa").value, nps:val("nps"), thai_do:val("thai_do"), quy_trinh:val("quy_trinh"), csvc:val("csvc"),
-    gop_y:$("gop_y").value.trim(), gop_y_khac:$("gop_y_khac").value.trim(), ho_ten:$("ho_ten").value.trim(), sdt:$("sdt").value.trim(),
+    gop_y:$("gop_y").value.trim(), ho_ten:$("ho_ten").value.trim(), sdt:$("sdt").value.trim(),
     hp:$("hp").value, device:deviceId() };
   const checks = [["q-khoa",!data.khoa],["q-nps",data.nps===null],["q-thai_do",data.thai_do===null],["q-quy_trinh",data.quy_trinh===null],["q-csvc",data.csvc===null]];
   checks.forEach(([id,bad])=>mark(id,bad));

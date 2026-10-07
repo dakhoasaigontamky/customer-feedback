@@ -1375,7 +1375,7 @@ function kTable(){
   const cm = SETTINGS.nguong.csat_max;
   $("kBody").innerHTML = rows.length ? rows.slice(kpage*KPS, kpage*KPS+KPS).map(s=>`<tr><td><b>${esc(s.ma_phieu)}</b></td><td>${esc(fmtDT(s.created_at))}</td><td>${esc(s.khoa)}</td>${pii?`<td>${esc(s.ho_ten||"")}${s.sdt?`<div class="muted">${esc(s.sdt)}</div>`:""}</td>`:""}
     <td>${scoreCell(s.nps, SETTINGS.nguong.nps_max)}</td><td>${scoreCell(s.thai_do,cm)}</td><td>${scoreCell(s.quy_trinh,cm)}</td><td>${scoreCell(s.csvc,cm)}</td>
-    <td class="nd">${s.gop_y?esc(s.gop_y):""}${s.gop_y_khac?`<div class="muted">Góp ý khác: ${esc(s.gop_y_khac)}</div>`:""}</td>
+    <td class="nd">${s.gop_y?esc(s.gop_y):""}${s.gop_y_khac?`<div class="muted">${esc(s.gop_y_khac)}</div>`:""}</td>
     <td style="white-space:nowrap">${s.complaint_id?`<button class="linkbtn" data-kopen="${s.complaint_id}">${esc(s.ma_ho_so||"Mở hồ sơ")}</button>`:'<span class="muted">–</span>'}${isAdmin()?` <button class="btn danger sm" data-kdel="${s.id}" title="Xóa phiếu rác">Xóa</button>`:""}</td></tr>`).join("")
     : `<tr><td colspan="10" class="empty">${SURVEYS.length?"Không có phiếu phù hợp.":"Chưa có phiếu khảo sát nào."}</td></tr>`;
   $("kInfo").textContent = `${rows.length} phiếu, trang ${kpage+1}/${pages}`;
@@ -1401,15 +1401,15 @@ $("kExport").onclick = async ()=>{
   const pii = isEditor(); busy(true, "Đang tạo file Excel…");
   try{
     const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Khao_Sat_Hai_Long", {views:[{state:"frozen", ySplit:2}]});
-    const head = ["STT","Mã phiếu","Ngày khảo sát","Khoa / Phòng khám","Họ và tên người bệnh","Số điện thoại","NPS (0–10)","Thái độ phục vụ (1–5)","Quy trình & Thời gian (1–5)","Cơ sở vật chất (1–5)","Ý kiến đóng góp (câu 5)","Góp ý khác (câu 6)","Mã hồ sơ phàn nàn"];
-    ws.columns = [6,15,17,24,24,14,11,14,16,14,44,44,19].map(w=>({width:w}));
+    const head = ["STT","Mã phiếu","Ngày khảo sát","Khoa / Phòng khám","Họ và tên người bệnh","Số điện thoại","NPS (0–10)","Thái độ phục vụ (1–5)","Quy trình & Thời gian (1–5)","Cơ sở vật chất (1–5)","Ý kiến đóng góp (câu 5)","Mã hồ sơ phàn nàn"];
+    ws.columns = [6,15,17,24,24,14,11,14,16,14,50,19].map(w=>({width:w}));
     ws.mergeCells(1,1,1,head.length); const t = ws.getCell(1,1);
     t.value = `KẾT QUẢ KHẢO SÁT MỨC ĐỘ HÀI LÒNG NGƯỜI BỆNH${$("kFrom").value||$("kTo").value?` (${$("kFrom").value||"…"} đến ${$("kTo").value||"nay"})`:""}`;
     t.font = {bold:true,size:14,color:{argb:"FF006B34"}}; t.alignment = {horizontal:"center"}; ws.getRow(1).height = 26;
     const hr = ws.getRow(2); hr.values = head; hr.height = 34;
     hr.eachCell(c=>{ c.font={bold:true,color:{argb:"FFFFFFFF"}}; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF009247"}}; c.alignment={horizontal:"center",vertical:"middle",wrapText:true}; });
     rows.forEach((s,i)=>{ const d = s._d; const r = ws.addRow([i+1, s.ma_phieu, new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),d.getHours(),d.getMinutes())), s.khoa,
-      pii?s.ho_ten:"", pii?s.sdt:"", s.nps, s.thai_do, s.quy_trinh, s.csvc, s.gop_y||"", s.gop_y_khac||"", s.ma_ho_so||""]);
+      pii?s.ho_ten:"", pii?s.sdt:"", s.nps, s.thai_do, s.quy_trinh, s.csvc, [s.gop_y, s.gop_y_khac].filter(Boolean).join("\n"), s.ma_ho_so||""]);
       r.getCell(3).numFmt = "dd/mm/yyyy hh:mm"; r.eachCell({includeEmpty:true},c=>{ c.alignment={vertical:"top",wrapText:true}; }); });
     const sum = wb.addWorksheet("Tong_hop");
     sum.columns = [28,10,10,18,20,18,16].map(w=>({width:w}));
