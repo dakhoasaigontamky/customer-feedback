@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Khảo sát hài lòng | BVĐK Sài Gòn Tam Kỳ</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF;--panel:#F2F7F4;--ink:#17231D;--muted:#58695F;--line:#D6E2DB;
+  --brand:#009247;--brand-deep:#006B34;--mint:#E2F2E9;--red:#C63B2F;--red-bg:#FBE9E7;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1914;--panel:#16241D;--ink:#E6EFEA;--muted:#9DB1A6;--line:#2A3D33;--brand:#2EBF74;--brand-deep:#7FDDAA;--mint:#1A3326;--red:#F07A6E;--red-bg:#3A1F1C;color-scheme:dark;}}
+:root[data-theme="dark"]{--bg:#0F1914;--panel:#16241D;--ink:#E6EFEA;--muted:#9DB1A6;--line:#2A3D33;--brand:#2EBF74;--brand-deep:#7FDDAA;--mint:#1A3326;--red:#F07A6E;--red-bg:#3A1F1C;color-scheme:dark;}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"iCiel Graphit","Be Vietnam Pro","Segoe UI",Roboto,Arial,sans-serif;font-size:16px;line-height:1.55;
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+[hidden]{display:none!important}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px}
+header{background:var(--brand);color:#fff;padding:22px 0 20px}
+header .hosp{font-size:13px;opacity:.92;margin:0 0 6px;font-weight:500}
+header h1{margin:0;font-size:24px;line-height:1.25;font-weight:700}
+header p{margin:8px 0 0;font-size:14.5px;opacity:.95}
+.meta{display:flex;gap:10px 18px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+.q{padding:22px 0;border-bottom:1px solid var(--line)}
+.q:last-of-type{border-bottom:0}
+.qh{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start}
+.qn{width:28px;height:28px;border-radius:50%;background:var(--mint);color:var(--brand-deep);font-weight:700;font-size:14px;display:grid;place-items:center;margin-top:1px}
+.qt{font-weight:600;font-size:16.5px;margin:0}
+.qs{color:var(--muted);font-size:13.5px;margin:2px 0 0}
+.req{color:var(--red);font-weight:600}
+.body{margin:14px 0 0 38px}
+@media (max-width:420px){.body{margin-left:0}}
+select,textarea,input[type=text],input[type=tel]{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:12px 12px}
+textarea{min-height:96px;resize:vertical}
+select:focus-visible,textarea:focus-visible,input:focus-visible,button:focus-visible,.opt input:focus-visible + span{outline:3px solid var(--brand);outline-offset:2px}
+/* NPS 0–10 */
+.nps{display:grid;grid-template-columns:repeat(11,1fr);gap:6px}
+@media (max-width:520px){.nps{grid-template-columns:repeat(6,1fr)}}
+.nps label{position:relative}
+.nps input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.nps span{display:grid;place-items:center;height:48px;border:1.5px solid var(--line);border-radius:10px;font-weight:700;font-size:17px;background:var(--bg);cursor:pointer;user-select:none}
+.nps input:checked + span{background:var(--brand);border-color:var(--brand);color:#fff}
+.nps input:focus-visible + span{outline:3px solid var(--brand);outline-offset:2px}
+.ends{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted);margin-top:8px}
+/* 5 mức */
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{position:relative;display:block}
+.opt input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.opt span{display:flex;align-items:center;gap:12px;min-height:50px;padding:10px 14px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer;user-select:none}
+.opt span::before{content:"";flex:none;width:20px;height:20px;border-radius:50%;border:2px solid var(--line);background:var(--bg)}
+.opt input:checked + span{border-color:var(--brand);background:var(--mint);font-weight:600}
+.opt input:checked + span::before{border-color:var(--brand);background:var(--brand);box-shadow:inset 0 0 0 3px var(--bg)}
+.opt input:focus-visible + span{outline:3px solid var(--brand);outline-offset:2px}
+.missing .qt{color:var(--red)}
+.missing .nps span,.missing .opt span,.missing select{border-color:var(--red)}
+.miss-msg{display:none;color:var(--red);font-size:13.5px;margin-top:8px}
+.missing .miss-msg{display:block}
+.contact{background:var(--panel);border-radius:14px;padding:18px 16px;margin:6px 0 4px}
+.contact h2{font-size:16px;margin:0 0 2px}
+.contact .sub{font-size:13.5px;color:var(--muted);margin:0 0 12px}
+.contact label.f{display:block;font-size:14px;font-weight:500;margin:0 0 12px}
+.contact label.f input{margin-top:5px}
+.note{font-size:13px;color:var(--muted);margin:6px 0 0}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.submit{padding:22px 0 36px}
+.btn{width:100%;font:inherit;font-size:17px;font-weight:700;border:0;border-radius:12px;padding:15px;background:var(--brand);color:#fff;cursor:pointer}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.ghost{background:transparent;color:var(--brand-deep);border:1.5px solid var(--line)}
+.err{background:var(--red-bg);color:var(--red);border-radius:10px;padding:12px 14px;font-size:14.5px;margin:0 0 12px}
+.done{text-align:center;padding:56px 0 40px}
+.done .tick{width:72px;height:72px;border-radius:50%;background:var(--mint);color:var(--brand);display:grid;place-items:center;margin:0 auto 18px}
+.done h2{font-size:22px;margin:0 0 10px}
+.done p{color:var(--muted);margin:0 auto 8px;max-width:42ch}
+.done .code{font-weight:700;color:var(--ink)}
+.done .btn{max-width:320px;margin-top:22px}
+footer{color:var(--muted);font-size:12.5px;text-align:center;padding:0 0 28px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <p class="hosp">Bệnh viện Đa khoa Sài Gòn Tam Kỳ</p>
+  <h1>Khảo sát mức độ hài lòng người bệnh</h1>
+  <p>Ý kiến của Ông/Bà giúp bệnh viện phục vụ tốt hơn. Phiếu mất khoảng 1 phút.</p>
+</div></header>
+
+<main class="wrap">
+<div id="loadErr" class="err" style="margin-top:16px" hidden></div>
+<form id="f" novalidate>
+  <div class="meta"><span>Ngày khảo sát: <b id="today"></b> <span>(tự động)</span></span></div>
+
+  <div class="q" id="q-khoa">
+    <div class="qh"><div class="qn" aria-hidden="true">•</div><div><p class="qt"><label for="khoa">Khoa / Phòng khám Ông/Bà đang sử dụng dịch vụ</label> <span class="req">*</span></p></div></div>
+    <div class="body"><select id="khoa" required><option value="">Chọn khoa / phòng khám</option></select>
+      <div class="miss-msg">Vui lòng chọn khoa / phòng khám.</div></div>
+  </div>
+
+  <fieldset class="q" id="q-nps" style="border:0;margin:0;min-width:0">
+    <legend class="qh" style="padding:0;width:100%"><div class="qn" aria-hidden="true">1</div><div><p class="qt">Trên thang điểm từ 0 đến 10, Ông/Bà sẵn sàng giới thiệu bệnh viện cho người thân, bạn bè khi họ có nhu cầu khám chữa bệnh ở mức độ nào? <span class="req">*</span></p></div></legend>
+    <div class="body"><div class="nps" id="npsBox"></div>
+      <div class="ends"><span>0: Hoàn toàn không</span><span>10: Rất sẵn sàng</span></div>
+      <div class="miss-msg">Vui lòng chọn một mức điểm từ 0 đến 10.</div></div>
+  </fieldset>
+
+  <div id="csat"></div>
+
+  <div class="q" id="q-gy">
+    <div class="qh"><div class="qn" aria-hidden="true">5</div><div><p class="qt"><label for="gop_y">Ông/Bà có điều gì chưa hài lòng hoặc có góp ý gì để bệnh viện phục vụ tốt hơn trong những lần khám sau không?</label></p></div></div>
+    <div class="body"><textarea id="gop_y" maxlength="2000" placeholder="Nhập ý kiến của Ông/Bà (không bắt buộc)"></textarea></div>
+  </div>
+
+  <div class="q" id="q-gk">
+    <div class="qh"><div class="qn" aria-hidden="true">6</div><div><p class="qt"><label for="gop_y_khac">Quý khách hàng có góp ý gì khác ngoài các nội dung trên:</label></p></div></div>
+    <div class="body"><textarea id="gop_y_khac" maxlength="2000" placeholder="Nhập góp ý khác (không bắt buộc)"></textarea></div>
+  </div>
+
+  <section class="contact" aria-labelledby="ctTitle">
+    <h2 id="ctTitle">Thông tin liên hệ</h2>
+    <p class="sub">Không bắt buộc. Để lại nếu Ông/Bà muốn bệnh viện phản hồi.</p>
+    <label class="f">Họ và tên người bệnh<input type="text" id="ho_ten" maxlength="120" autocomplete="name"></label>
+    <label class="f" style="margin-bottom:0">Số điện thoại<input type="tel" id="sdt" maxlength="15" inputmode="tel" autocomplete="tel"></label>
+    <p class="note">Thông tin bạn cung cấp được Bệnh viện lưu giữ để ghi nhận và xử lý góp ý.</p>
+    <div class="miss-msg" id="sdtMsg" style="margin-top:6px">Số điện thoại chưa đúng, vui lòng kiểm tra lại hoặc để trống.</div>
+  </section>
+
+  <div class="hp" aria-hidden="true"><label>Không điền ô này<input type="text" id="hp" tabindex="-1" autocomplete="off"></label></div>
+
+  <div class="submit">
+    <div class="err" id="sendErr" role="alert" hidden></div>
+    <button class="btn" type="submit" id="btnSend">Gửi phiếu khảo sát</button>
+  </div>
+</form>
+
+<div class="done" id="done" hidden role="status">
+  <div class="tick" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+  <h2>Cảm ơn Ông/Bà đã góp ý</h2>
+  <p id="doneMsg">Bệnh viện đã ghi nhận phiếu khảo sát của Ông/Bà.</p>
+  <p>Mã phiếu: <span class="code" id="doneCode"></span></p>
+  <button class="btn ghost" type="button" id="btnAgain">Làm phiếu mới</button>
+</div>
+</main>
+<footer>Bệnh viện Đa khoa Sài Gòn Tam Kỳ, thuộc Hệ thống Y khoa Sài Gòn (MSG)</footer>
+
+<script>
+// ===== CẤU HÌNH: giống file index.html của tool =====
+const SUPABASE_URL = "https://jkkfvvcdlpnarxvvblzq.supabase.co";
+const SUPABASE_KEY = "sb_publishable_gC6Qb_K9SmwM4S_kj86Dwg_BApkiOQL";
+// ====================================================
+const $ = id => document.getElementById(id);
+const CSAT = [
+  {id:"thai_do", n:2, q:"Ông/Bà đánh giá thế nào về thái độ ứng xử, sự tận tình và hướng dẫn của đội ngũ nhân viên (Bác sĩ, Điều dưỡng, CSKH)?",
+   labels:["Rất không hài lòng","Không hài lòng","Bình thường","Hài lòng","Rất hài lòng"]},
+  {id:"quy_trinh", n:3, q:"Ông/Bà đánh giá như thế nào về thời gian chờ đợi và sự rõ ràng trong quy trình thủ tục (đón tiếp, thanh toán, nhận thuốc/kết quả)?",
+   labels:["Rất không hài lòng","Không hài lòng","Bình thường","Hài lòng","Rất hài lòng"]},
+  {id:"csvc", n:4, q:"Ông/Bà thấy mức độ sạch sẽ, sự tiện nghi và không gian không khí tại khu vực chờ/phòng bệnh/khu vệ sinh như thế nào?",
+   labels:["Rất kém","Kém","Trung bình","Tốt","Rất tốt"]}
+];
+// NPS 0–10
+$("npsBox").innerHTML = Array.from({length:11},(_,i)=>`<label><input type="radio" name="nps" value="${i}" aria-label="${i} điểm"><span>${i}</span></label>`).join("");
+// CSAT 3 câu, giữ đúng thứ tự 1 → 5 như mẫu phiếu
+$("csat").innerHTML = CSAT.map(c=>`<fieldset class="q" id="q-${c.id}" style="border:0;margin:0;min-width:0">
+  <legend class="qh" style="padding:0;width:100%"><div class="qn" aria-hidden="true">${c.n}</div><div><p class="qt">${c.q} <span class="req">*</span></p></div></legend>
+  <div class="body"><div class="opts">${c.labels.map((l,i)=>`<label class="opt"><input type="radio" name="${c.id}" value="${i+1}"><span>${i+1}. ${l}</span></label>`).join("")}</div>
+  <div class="miss-msg">Vui lòng chọn một mức đánh giá.</div></div></fieldset>`).join("");
+
+const pad = n => String(n).padStart(2,"0");
+function showToday(){ const d = new Date(); $("today").textContent = `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`; }
+showToday(); setInterval(showToday, 60000);
+
+function deviceId(){ try { let v = localStorage.getItem("phkh_dev"); if (!v){ v = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("phkh_dev", v); } return v; } catch(e){ return null; } }
+async function rpc(fn, args){
+  let res; try { res = await fetch(SUPABASE_URL + "/rest/v1/rpc/" + fn, {method:"POST", headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY}, body:JSON.stringify(args||{})}); }
+  catch(e){ throw new Error("NETWORK"); }
+  let data = null; try { data = await res.json(); } catch(e){}
+  if (!res.ok) throw new Error((data && data.message) || ("HTTP " + res.status));
+  return data;
+}
+async function loadKhoa(){
+  try{
+    const cfg = await rpc("phkh_survey_config");
+    $("khoa").innerHTML = '<option value="">Chọn khoa / phòng khám</option>' + (cfg.khoa||[]).map(k=>`<option>${String(k).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}</option>`).join("");
+    const pre = new URLSearchParams(location.search).get("khoa");          // QR riêng cho từng khoa (nếu dùng sau này)
+    if (pre && [...$("khoa").options].some(o=>o.value===pre)) $("khoa").value = pre;
+    $("loadErr").hidden = true;
+  }catch(e){
+    $("loadErr").textContent = e.message==="NETWORK" ? "Không tải được phiếu do mất kết nối mạng. Vui lòng kiểm tra mạng rồi tải lại trang." : "Phiếu khảo sát tạm thời chưa sẵn sàng. Vui lòng thử lại sau.";
+    $("loadErr").hidden = false;
+  }
+}
+loadKhoa();
+
+const val = name => { const c = document.querySelector(`input[name="${name}"]:checked`); return c ? +c.value : null; };
+function mark(id, bad){ $(id).classList.toggle("missing", bad); }
+document.addEventListener("change", e=>{ const q = e.target.closest(".q"); if (q) q.classList.remove("missing"); });
+$("sdt").addEventListener("input", ()=>$("sdtMsg").style.display = "none");
+
+$("f").onsubmit = async e=>{
+  e.preventDefault(); $("sendErr").hidden = true;
+  const data = { khoa:$("khoa").value, nps:val("nps"), thai_do:val("thai_do"), quy_trinh:val("quy_trinh"), csvc:val("csvc"),
+    gop_y:$("gop_y").value.trim(), gop_y_khac:$("gop_y_khac").value.trim(), ho_ten:$("ho_ten").value.trim(), sdt:$("sdt").value.trim(),
+    hp:$("hp").value, device:deviceId() };
+  const checks = [["q-khoa",!data.khoa],["q-nps",data.nps===null],["q-thai_do",data.thai_do===null],["q-quy_trinh",data.quy_trinh===null],["q-csvc",data.csvc===null]];
+  checks.forEach(([id,bad])=>mark(id,bad));
+  const digits = data.sdt.replace(/\D/g,"");
+  const badPhone = data.sdt && (digits.length < 9 || digits.length > 11);
+  $("sdtMsg").style.display = badPhone ? "block" : "none";
+  const first = checks.find(c=>c[1]);
+  if (first || badPhone){
+    const el = first ? $(first[0]) : $("sdt");
+    el.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"center"});
+    const focusable = el.matches("input,select") ? el : el.querySelector("input,select"); if (focusable) focusable.focus({preventScroll:true});
+    return;
+  }
+  $("btnSend").disabled = true; $("btnSend").textContent = "Đang gửi…";
+  try{
+    const r = await rpc("phkh_survey_submit", {p:data});
+    if (!r || !r.ok){
+      const m = {rate:"Thiết bị này vừa gửi nhiều phiếu liên tiếp. Vui lòng thử lại sau ít phút.", khoa:"Khoa / phòng khám không hợp lệ, vui lòng tải lại trang và chọn lại.", invalid:"Phiếu chưa đầy đủ, vui lòng kiểm tra lại các câu bắt buộc."};
+      throw new Error(m[r && r.error] || "Chưa gửi được phiếu. Vui lòng thử lại.");
+    }
+    const unhappy = !!r.chuyen_xu_ly;
+    $("doneMsg").textContent = unhappy ? "Bệnh viện xin lỗi vì những điều chưa làm Ông/Bà hài lòng. Ý kiến đã được chuyển đến bộ phận Chăm sóc khách hàng để xem xét và cải tiến."
+                                       : "Bệnh viện đã ghi nhận phiếu khảo sát của Ông/Bà.";
+    $("doneCode").textContent = r.ma_phieu || "";
+    $("doneCode").parentElement.hidden = !r.ma_phieu;
+    $("f").hidden = true; $("done").hidden = false; window.scrollTo(0,0);
+  }catch(err){
+    $("sendErr").textContent = err.message==="NETWORK" ? "Không gửi được do mất kết nối mạng. Vui lòng kiểm tra mạng rồi bấm gửi lại." : err.message;
+    $("sendErr").hidden = false;
+  }finally{ $("btnSend").disabled = false; $("btnSend").textContent = "Gửi phiếu khảo sát"; }
+};
+$("btnAgain").onclick = ()=>{ const k = $("khoa").value; $("f").reset(); $("khoa").value = k; document.querySelectorAll(".missing").forEach(x=>x.classList.remove("missing"));
+  $("done").hidden = true; $("f").hidden = false; window.scrollTo(0,0); };
+</script>
+</body>
+</html>

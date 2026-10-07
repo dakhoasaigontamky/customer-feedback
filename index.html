@@ -157,6 +157,11 @@ legend{font-weight:700;font-size:14px;padding:0 6px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;display:none;max-width:90vw;z-index:100}
 .loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--shade);color:#fff;z-index:90;font-weight:600}
 footer{padding:22px 0 40px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line)}
+.qrbox{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:start}
+#qr{width:200px;height:200px;background:#fff;padding:10px;border-radius:12px;border:1px solid var(--line)}
+#qr canvas,#qr img{width:180px!important;height:180px!important}
+tr.sel td{background:var(--mint)}
+@media (max-width:560px){.qrbox{grid-template-columns:1fr}}
 @media (max-width:860px){.hero,.grid2{grid-template-columns:1fr}.ck{grid-template-columns:28px 1fr}.ck .chip{grid-column:2}
   .g2,.g3,.g4{grid-template-columns:1fr}.span2,.span3{grid-column:auto}.ck-sum{grid-template-columns:repeat(2,1fr)}.bar-row{grid-template-columns:1fr 1.2fr 64px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -205,6 +210,7 @@ footer{padding:22px 0 40px;color:var(--muted);font-size:12.5px;border-top:1px so
   <nav class="tabs" role="tablist" aria-label="Chức năng">
     <button role="tab" data-tab="dash" aria-selected="true">Dashboard phàn nàn</button>
     <button role="tab" data-tab="list" aria-selected="false">Danh sách phàn nàn</button>
+    <button role="tab" data-tab="ks" aria-selected="false">Khảo sát hài lòng</button>
     <button role="tab" data-tab="users" aria-selected="false" id="tabUsersBtn" hidden>Người dùng</button>
   </nav>
 </div></header>
@@ -281,6 +287,58 @@ footer{padding:22px 0 40px;color:var(--muted);font-size:12.5px;border-top:1px so
   </div>
   <div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>Mã hồ sơ</th><th>Ngày tiếp nhận</th><th>Kênh</th><th class="pii">Khách hàng</th><th>Nội dung phản ánh</th><th>Chi tiết nhóm</th><th>Rủi ro</th><th>Đơn vị</th><th>Người xử lý</th><th>Tình trạng</th></tr></thead><tbody id="lBody"></tbody></table></div>
   <div class="pager"><span id="lInfo"></span><button class="btn ghost sm" id="lPrev">Trang trước</button><button class="btn ghost sm" id="lNext">Trang sau</button></div>
+</div>
+
+<!-- ===== TAB KHẢO SÁT HÀI LÒNG ===== -->
+<div id="tab-ks" role="tabpanel" hidden>
+  <div class="filters" role="group" aria-label="Bộ lọc khảo sát">
+    <label>Từ tháng<input type="month" id="kFrom"></label>
+    <label>Đến tháng<input type="month" id="kTo"></label>
+    <label>Khoa / phòng khám<select id="kKhoa"></select></label>
+    <button class="btn ghost" id="kReset">Bỏ lọc</button>
+  </div>
+  <div class="drill" id="kDrillTop"></div>
+  <div class="hero">
+    <div><p class="lead" id="kLead"></p><p class="lead-sub" id="kLeadSub"></p></div>
+    <div class="stats" id="kStats"></div>
+  </div>
+  <section class="grid2">
+    <div><h2>NPS theo tháng</h2><p class="hint">NPS = % khách chấm 9–10 trừ % khách chấm 0–6, từ −100 đến 100. Bấm vào điểm để xem tháng đó.</p><div class="chart"><canvas id="cNps" aria-label="Biểu đồ NPS theo tháng"></canvas></div></div>
+    <div><h2>Mức độ hài lòng từng hạng mục</h2><p class="hint">Tỷ lệ phiếu theo 5 mức đánh giá. Bấm vào một phần của thanh để xem các phiếu đó.</p><div class="chart"><canvas id="cCsat" aria-label="Biểu đồ mức độ hài lòng theo hạng mục"></canvas></div></div>
+  </section>
+  <section>
+    <h2>Theo khoa / phòng khám</h2><p class="hint">% hài lòng là tỷ lệ phiếu chấm mức 4–5. Bấm vào dòng để lọc theo khoa.</p>
+    <div class="tbl-wrap"><table style="min-width:760px"><thead><tr><th>Khoa / phòng khám</th><th>Số phiếu</th><th>NPS</th><th>Thái độ phục vụ</th><th>Quy trình &amp; thời gian</th><th>Cơ sở vật chất</th><th>Không hài lòng</th></tr></thead><tbody id="kKhoaBody"></tbody></table></div>
+  </section>
+  <section id="secKsList">
+    <div class="toolbar" style="padding-top:0"><div><h2 style="margin:0">Phiếu khảo sát</h2><p class="hint" style="margin:0">Phiếu không hài lòng đã được tự tạo hồ sơ phàn nàn; bấm mã hồ sơ để mở.</p></div>
+      <div class="acts"><input type="search" id="kQ" placeholder="Tìm mã phiếu, góp ý, khách…" aria-label="Tìm phiếu" style="min-width:230px"><button class="btn ghost" id="kExport">Export Excel</button></div></div>
+    <div class="drill" id="kDrillTbl" style="padding:0 0 10px"></div>
+    <div class="tbl-wrap"><table style="min-width:1040px"><thead><tr><th>Mã phiếu</th><th>Thời gian</th><th>Khoa</th><th class="pii">Khách hàng</th><th>NPS</th><th>Thái độ</th><th>Quy trình</th><th>CSVC</th><th>Góp ý</th><th>Hồ sơ phàn nàn</th></tr></thead><tbody id="kBody"></tbody></table></div>
+    <div class="pager"><span id="kInfo"></span><button class="btn ghost sm" id="kPrev">Trang trước</button><button class="btn ghost sm" id="kNext">Trang sau</button></div>
+  </section>
+  <section>
+    <h2>Mã QR và cài đặt phiếu</h2>
+    <div class="grid2">
+      <div class="qrbox">
+        <div id="qr" aria-label="Mã QR dẫn tới trang khảo sát"></div>
+        <div>
+          <p class="hint" style="margin:0 0 6px">Khách quét mã bằng camera điện thoại để mở phiếu, không cần đăng nhập. Một mã dùng chung cho cả bệnh viện.</p>
+          <p class="meta" style="word-break:break-all;margin:0 0 12px">Đường dẫn: <a id="qrUrl" target="_blank" rel="noopener"></a></p>
+          <div class="acts" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="qrPng">Tải ảnh QR</button><button class="btn ghost" id="qrPoster">In poster A5</button><button class="btn ghost" id="qrCopy">Sao chép đường dẫn</button></div>
+        </div>
+      </div>
+      <div>
+        <label class="f">Danh sách khoa / phòng khám trên phiếu (mỗi dòng một khoa)<textarea id="setKhoa" rows="9"></textarea></label>
+        <div class="g g2" style="margin-top:10px">
+          <label class="f">Tự tạo hồ sơ phàn nàn khi NPS từ 0 đến<input type="text" inputmode="numeric" id="setNps"></label>
+          <label class="f">hoặc có hạng mục chấm từ mức 1 đến<input type="text" inputmode="numeric" id="setCsat"></label>
+        </div>
+        <p class="meta" id="setNote" style="margin:8px 0 10px"></p>
+        <button class="btn" id="setSave">Lưu cài đặt</button>
+      </div>
+    </div>
+  </section>
 </div>
 
 <!-- ===== TAB NGƯỜI DÙNG ===== -->
@@ -407,6 +465,7 @@ footer{padding:22px 0 40px;color:var(--muted);font-size:12.5px;border-top:1px so
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 // ======================================================================
 // CẤU HÌNH – dùng chung project Supabase và đăng nhập của ONE MSG
@@ -484,6 +543,7 @@ async function loadData(){
   busy(true, "Đang tải dữ liệu…");
   try{
     DATA = prepRows(await call("phkh_list"));
+    await loadSurveys();
     if (isAdmin()) { USERS = await call("phkh_roles_list"); await loadOneUsers(); }
     refreshAll();
   }catch(e){ console.error(e); toast("Không tải được dữ liệu: "+e.message); }
@@ -507,6 +567,7 @@ function refreshAll(){
   buildDashFilters(); renderDash();
   buildListFilters(); renderList();
   fillDatalists();
+  buildKsFilters(); fillSettings(); renderKs();
   if (isAdmin()) renderUsers();
 }
 
@@ -564,11 +625,19 @@ $("btnLogout").onclick = async ()=>{ if (TOKEN) rpc("onemsg_logout", {p_token:TO
   TOKEN=null; ME=null; DATA=[]; USERS=[]; delete $("scrApp").dataset.started; show("scrLogin"); $("lgErr").textContent=""; };
 $("btnReload").onclick = ()=>loadData();
 
+function ksDashNote(){ // phiếu khảo sát QR trong cùng kỳ đang lọc ở Dashboard
+  if (!SURVEYS.length) return "";
+  const y=$("fY").value, q=$("fQ").value, m=$("fM").value;
+  const r = SURVEYS.filter(s=>{ const yy=s._d.getFullYear(), mm=s._d.getMonth()+1; return (!y||yy==y)&&(!q||Math.ceil(mm/3)==q)&&(!m||mm==m); });
+  const bad = r.filter(s=>s._bad), linked = bad.filter(s=>s.complaint_id).length;
+  return ` Khảo sát QR cùng kỳ: ${r.length} phiếu, ${bad.length} phiếu không hài lòng, ${linked} đã tự tạo hồ sơ.`;
+}
 // ===== Tabs =====
 function switchTab(t){
   document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.tab===t)));
-  ["dash","list","users"].forEach(x=>$("tab-"+x).hidden = x!==t);
+  ["dash","list","ks","users"].forEach(x=>$("tab-"+x).hidden = x!==t);
   if (t==="dash") setTimeout(renderDash, 0);
+  if (t==="ks") setTimeout(()=>{ renderQr(); renderKs(); }, 0);
 }
 document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 document.addEventListener("click", e=>{ const c = e.target.closest("[data-close]"); if (c) c.closest("dialog").close(); });
@@ -726,7 +795,7 @@ function checklist(rows){
   const items = [
     ["Đã ghi nhận đầy đủ các phản hồi của khách?", man("Tổng hợp phản ánh từ tất cả các kênh trong tháng và đối chiếu với PL1.")],
     ["Đã đối soát Google Review?", man(`Có ${c("google")} hồ sơ từ Google Review; so với số review 1–3★ trên Google Business Profile trong tháng.`, "google", c("google"))],
-    ["Đã đối soát Hotline, NPS và CSAT?", man(`Có ${c("hotline")} hồ sơ từ Hotline/NPS/CSAT; đối chiếu với báo cáo tổng đài, NPS Detractor (0–6 điểm) và CSAT thấp.`, "hotline", c("hotline"))],
+    ["Đã đối soát Hotline, NPS và CSAT?", man(`Có ${c("hotline")} hồ sơ từ Hotline/NPS/CSAT; đối chiếu với báo cáo tổng đài, NPS Detractor (0–6 điểm) và CSAT thấp.${ksDashNote()}`, "hotline", c("hotline"))],
     ["100% phản hồi được phân loại cấp độ?", auto(c("noRisk"), `${N-c("noRisk")}/${N} hồ sơ đã có cấp độ rủi ro (${pct(N-c("noRisk"),N)}%).`, "noRisk")],
     ["100% các phản hồi có SLA và người phụ trách?", auto(c("noSLA"), `${N-c("noSLA")}/${N} hồ sơ có đủ SLA và người xử lý (${pct(N-c("noSLA"),N)}%).`, "noSLA")],
     ["Không còn cấp độ ĐỎ quá SLA?", calc ? auto(c("redOver"), `${c("redOver")} hồ sơ Đỏ quá SLA (tính trên ${calc} hồ sơ có ngày giờ tiếp nhận).`, "redOver") : noData("Chưa tính được: các hồ sơ chưa ghi ngày giờ tiếp nhận cụ thể (chỉ có tháng).")],
@@ -1218,6 +1287,193 @@ $("uiGo").onclick = async ()=>{
   finally{ busy(false); $("uiGo").disabled = false; }
 };
 
+// ======================================================================
+// KHẢO SÁT HÀI LÒNG QUA QR
+// ======================================================================
+let SURVEYS = [], SETTINGS = {khoa:[], nguong:{nps_max:6, csat_max:2}}, kpage = 0, kDrill = null; const KPS = 20;
+const KS_ITEMS = [
+  {k:"thai_do", name:"Thái độ phục vụ", labels:["Rất không hài lòng","Không hài lòng","Bình thường","Hài lòng","Rất hài lòng"]},
+  {k:"quy_trinh", name:"Quy trình & thời gian", labels:["Rất không hài lòng","Không hài lòng","Bình thường","Hài lòng","Rất hài lòng"]},
+  {k:"csvc", name:"Cơ sở vật chất", labels:["Rất kém","Kém","Trung bình","Tốt","Rất tốt"]}
+];
+const KS_COLORS = ["#B4372C","#E2897F","#B5BCB8","#78C49A","#1E9E5A"];   // phân kỳ: đỏ, xám trung tính, xanh
+function prepSurveys(rows){
+  rows.forEach(s=>{ const d = new Date(s.created_at); s._d = d; s._ym = ym(d.getFullYear(), d.getMonth()+1);
+    s._bad = s.nps <= SETTINGS.nguong.nps_max || Math.min(s.thai_do, s.quy_trinh, s.csvc) <= SETTINGS.nguong.csat_max; });
+  return rows;
+}
+function npsOf(rows){ if (!rows.length) return null; const p = rows.filter(s=>s.nps>=9).length, d = rows.filter(s=>s.nps<=6).length; return Math.round((p-d)*100/rows.length); }
+const okPct = (rows,k) => rows.length ? pct(rows.filter(s=>s[k]>=4).length, rows.length) : null;
+const fmtNps = v => v==null ? "–" : (v>0?"+":"")+v;
+function buildKsFilters(){
+  const ks = [...new Set(SURVEYS.map(s=>s.khoa).concat(SETTINGS.khoa||[]))];
+  opts($("kKhoa"), ks.map(k=>[k,k]), "Tất cả khoa");
+}
+function kFiltered(withDrill=true){
+  const f = ymFromInput($("kFrom").value), t = ymFromInput($("kTo").value), kh = $("kKhoa").value;
+  return SURVEYS.filter(s=>(!f||s._ym>=f) && (!t||s._ym<=t) && (!kh||s.khoa===kh) &&
+    (!withDrill || !kDrill || s[kDrill.k]===kDrill.level));
+}
+function kDrillTags(){
+  const tag = kDrill ? `<span>Đang lọc theo biểu đồ:</span><span class="tag">${esc(KS_ITEMS.find(i=>i.k===kDrill.k).name)}: ${kDrill.level}. ${esc(KS_ITEMS.find(i=>i.k===kDrill.k).labels[kDrill.level-1])}<button aria-label="Bỏ lọc này" data-kx="1">×</button></span>` : "";
+  ["kDrillTop","kDrillTbl"].forEach(id=>{ $(id).innerHTML = tag; $(id).classList.toggle("on", !!kDrill); });
+}
+function renderKs(){
+  if ($("tab-ks").hidden) return;
+  kDrillTags();
+  const rows = kFiltered(), N = rows.length, base = kFiltered(false);
+  if (!SURVEYS.length){ $("kLead").textContent = "Chưa có phiếu khảo sát nào."; $("kLeadSub").textContent = "In mã QR ở cuối trang và đặt tại quầy, khu chờ, phòng bệnh để khách quét và góp ý."; }
+  else if (!N){ $("kLead").textContent = "Không có phiếu nào khớp bộ lọc."; $("kLeadSub").textContent = "Bấm Bỏ lọc để xem lại toàn bộ."; }
+  else {
+    const items = KS_ITEMS.map(i=>({...i, ok: okPct(rows,i.k)})).sort((a,b)=>a.ok-b.ok);
+    $("kLead").innerHTML = `${N} phiếu khảo sát, NPS <b>${fmtNps(npsOf(rows))}</b>.`;
+    $("kLeadSub").textContent = `Hạng mục được đánh giá thấp nhất: ${items[0].name} (${items[0].ok}% hài lòng).`;
+  }
+  const allOk = N ? pct(rows.reduce((a,s)=>a+KS_ITEMS.filter(i=>s[i.k]>=4).length,0), N*3) : 0;
+  const bad = rows.filter(s=>s._bad).length, linked = rows.filter(s=>s.complaint_id).length;
+  $("kStats").innerHTML = [[N,"Phiếu khảo sát"],[fmtNps(npsOf(rows)),"Điểm NPS"],[allOk+"%","Tỷ lệ hài lòng chung (mức 4–5)"],[`${bad}`,`Phiếu không hài lòng, ${linked} đã thành hồ sơ phàn nàn`]]
+    .map(([n,l])=>`<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`).join("");
+  drawNps(base); drawCsat(base); khoaTable(base); kpage = 0; kTable();
+}
+function drawNps(rows){
+  const yms = [...new Set(rows.map(s=>s._ym))].sort((a,b)=>a-b);
+  const pts = yms.map(v=>{ const r = rows.filter(s=>s._ym===v); return {v, nps:npsOf(r), n:r.length}; });
+  const o = baseOpts(); o.plugins.legend.display = false;
+  o.scales.y.min = -100; o.scales.y.max = 100; o.scales.y.ticks.stepSize = 50; o.scales.y.beginAtZero = false;
+  o.plugins.tooltip = {callbacks:{label:c=>`NPS ${fmtNps(pts[c.dataIndex].nps)} (${pts[c.dataIndex].n} phiếu)`, footer:()=>"Bấm để xem tháng này"}};
+  o.plugins.datalabels = {display:true, align:"top", offset:4, color:css("--ink"), font:{weight:"600",size:11}, formatter:v=>fmtNps(v)};
+  o.layout = {padding:{top:18}};
+  o.onClick = (e,els)=>{ if(!els.length) return; const v = pts[els[0].index].v; setTimeout(()=>{ $("kFrom").value = $("kTo").value = ymStr(v); kDrill=null; renderKs(); goKsTable(); },0); };
+  charts.nps && charts.nps.destroy();
+  charts.nps = new Chart($("cNps"), {type:"line", data:{labels:pts.map(p=>`T${p.v%100}/${Math.floor(p.v/100)}`),
+    datasets:[{data:pts.map(p=>p.nps), borderColor:css("--brand"), backgroundColor:css("--brand"), borderWidth:2, pointRadius:5, pointHoverRadius:7, tension:.25}]}, options:o});
+}
+function drawCsat(rows){
+  const o = baseOpts(); o.indexAxis = "y"; o.scales.x.stacked = o.scales.y.stacked = true;
+  o.scales.x.max = 100; o.scales.x.grid = {color:css("--line")}; o.scales.x.ticks = {color:css("--muted"), callback:v=>v+"%"}; o.scales.y.grid = {display:false};
+  o.plugins.legend.position = "bottom";
+  o.plugins.tooltip = {callbacks:{label:c=>{ const it = KS_ITEMS[c.dataIndex], n = rows.filter(s=>s[it.k]===c.datasetIndex+1).length; return `${c.datasetIndex+1}. ${it.labels[c.datasetIndex]}: ${n} phiếu (${c.raw}%)`; }, footer:()=>"Bấm để xem các phiếu"}};
+  o.plugins.datalabels = {display:c=>c.dataset.data[c.dataIndex]>=8, color:c=>c.datasetIndex===2?"#17231D":"#fff", font:{weight:"600",size:11}, formatter:v=>Math.round(v)+"%"};
+  o.onClick = (e,els)=>{ if(!els.length) return; const el = els[0]; const d = {k:KS_ITEMS[el.index].k, level:el.datasetIndex+1};
+    setTimeout(()=>{ kDrill = (kDrill && kDrill.k===d.k && kDrill.level===d.level) ? null : d; renderKs(); goKsTable(); },0); };
+  charts.csat && charts.csat.destroy();
+  charts.csat = new Chart($("cCsat"), {type:"bar", data:{labels:KS_ITEMS.map(i=>i.name),
+    datasets:[1,2,3,4,5].map(l=>({label:`${l}. ${KS_ITEMS[0].labels[l-1]}`, backgroundColor:KS_COLORS[l-1], borderColor:css("--bg"), borderWidth:{left:1,right:1}, borderSkipped:false,
+      data:KS_ITEMS.map(i=>rows.length ? Math.round(rows.filter(s=>s[i.k]===l).length*1000/rows.length)/10 : 0)}))}, options:o});
+}
+function khoaTable(rows){
+  const m = new Map(); rows.forEach(s=>{ if(!m.has(s.khoa)) m.set(s.khoa, []); m.get(s.khoa).push(s); });
+  const list = [...m.entries()].sort((a,b)=>b[1].length-a[1].length), sel = $("kKhoa").value;
+  $("kKhoaBody").innerHTML = list.length ? list.map(([k,r])=>`<tr class="rowlink${k===sel?" sel":""}" data-kkhoa="${esc(k)}" tabindex="0"><td><b>${esc(k)}</b></td><td>${r.length}</td><td>${fmtNps(npsOf(r))}</td>${KS_ITEMS.map(i=>`<td>${okPct(r,i.k)}%</td>`).join("")}<td>${r.filter(s=>s._bad).length}</td></tr>`).join("")
+    : `<tr><td colspan="7" class="empty">Chưa có phiếu trong khoảng thời gian này.</td></tr>`;
+}
+const scoreCell = (v, max) => `<span class="${v<=max?"st open":""}">${v}</span>`;
+function kTable(){
+  const q = one($("kQ").value).toLowerCase(), pii = isEditor();
+  const rows = kFiltered().filter(s=>!q || [s.ma_phieu,s.khoa,s.gop_y,s.gop_y_khac,s.ma_ho_so,pii?s.ho_ten:"",pii?s.sdt:""].join(" ").toLowerCase().includes(q)).slice().reverse();
+  const pages = Math.max(1, Math.ceil(rows.length/KPS)); kpage = Math.min(kpage, pages-1);
+  const cm = SETTINGS.nguong.csat_max;
+  $("kBody").innerHTML = rows.length ? rows.slice(kpage*KPS, kpage*KPS+KPS).map(s=>`<tr><td><b>${esc(s.ma_phieu)}</b></td><td>${esc(fmtDT(s.created_at))}</td><td>${esc(s.khoa)}</td>${pii?`<td>${esc(s.ho_ten||"")}${s.sdt?`<div class="muted">${esc(s.sdt)}</div>`:""}</td>`:""}
+    <td>${scoreCell(s.nps, SETTINGS.nguong.nps_max)}</td><td>${scoreCell(s.thai_do,cm)}</td><td>${scoreCell(s.quy_trinh,cm)}</td><td>${scoreCell(s.csvc,cm)}</td>
+    <td class="nd">${s.gop_y?esc(s.gop_y):""}${s.gop_y_khac?`<div class="muted">Góp ý khác: ${esc(s.gop_y_khac)}</div>`:""}</td>
+    <td style="white-space:nowrap">${s.complaint_id?`<button class="linkbtn" data-kopen="${s.complaint_id}">${esc(s.ma_ho_so||"Mở hồ sơ")}</button>`:'<span class="muted">–</span>'}${isAdmin()?` <button class="btn danger sm" data-kdel="${s.id}" title="Xóa phiếu rác">Xóa</button>`:""}</td></tr>`).join("")
+    : `<tr><td colspan="10" class="empty">${SURVEYS.length?"Không có phiếu phù hợp.":"Chưa có phiếu khảo sát nào."}</td></tr>`;
+  $("kInfo").textContent = `${rows.length} phiếu, trang ${kpage+1}/${pages}`;
+  $("kPrev").disabled = kpage===0; $("kNext").disabled = kpage>=pages-1;
+}
+function goKsTable(){ kpage=0; kTable(); $("secKsList").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); }
+["kFrom","kTo","kKhoa"].forEach(id=>$(id).onchange=()=>{ kDrill=null; renderKs(); });
+$("kReset").onclick=()=>{ ["kFrom","kTo","kKhoa","kQ"].forEach(id=>$(id).value=""); kDrill=null; renderKs(); };
+$("kQ").oninput=()=>{kpage=0;kTable();};
+$("kPrev").onclick=()=>{kpage--;kTable();}; $("kNext").onclick=()=>{kpage++;kTable();};
+document.addEventListener("click", async e=>{
+  if (e.target.closest("[data-kx]")){ kDrill=null; renderKs(); return; }
+  const o = e.target.closest("[data-kopen]"); if (o){ const id = o.dataset.kopen; if (DATA.some(r=>r.id===id)) openRec(id); else toast("Hồ sơ phàn nàn này đã bị xóa."); return; }
+  const kr = e.target.closest("tr[data-kkhoa]"); if (kr){ $("kKhoa").value = $("kKhoa").value===kr.dataset.kkhoa ? "" : kr.dataset.kkhoa; kDrill=null; renderKs(); return; }
+  const d = e.target.closest("[data-kdel]"); if (d){ const s = SURVEYS.find(x=>x.id===d.dataset.kdel);
+    if (!confirm(`Xóa phiếu ${s.ma_phieu}? Chỉ nên xóa phiếu rác. Hồ sơ phàn nàn đã tạo từ phiếu (nếu có) vẫn được giữ.`)) return;
+    try { await call("phkh_survey_delete", {p_id:s.id}); SURVEYS = SURVEYS.filter(x=>x!==s); renderKs(); toast("Đã xóa phiếu."); } catch(err){ toast(err.message); } }
+});
+document.addEventListener("keydown", e=>{ if (e.key==="Enter" && e.target.matches && e.target.matches("tr[data-kkhoa]")) e.target.click(); });
+// ----- Export -----
+$("kExport").onclick = async ()=>{
+  const rows = kFiltered(); if (!rows.length){ toast("Không có phiếu để xuất."); return; }
+  const pii = isEditor(); busy(true, "Đang tạo file Excel…");
+  try{
+    const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Khao_Sat_Hai_Long", {views:[{state:"frozen", ySplit:2}]});
+    const head = ["STT","Mã phiếu","Ngày khảo sát","Khoa / Phòng khám","Họ và tên người bệnh","Số điện thoại","NPS (0–10)","Thái độ phục vụ (1–5)","Quy trình & Thời gian (1–5)","Cơ sở vật chất (1–5)","Ý kiến đóng góp (câu 5)","Góp ý khác (câu 6)","Mã hồ sơ phàn nàn"];
+    ws.columns = [6,15,17,24,24,14,11,14,16,14,44,44,19].map(w=>({width:w}));
+    ws.mergeCells(1,1,1,head.length); const t = ws.getCell(1,1);
+    t.value = `KẾT QUẢ KHẢO SÁT MỨC ĐỘ HÀI LÒNG NGƯỜI BỆNH${$("kFrom").value||$("kTo").value?` (${$("kFrom").value||"…"} đến ${$("kTo").value||"nay"})`:""}`;
+    t.font = {bold:true,size:14,color:{argb:"FF006B34"}}; t.alignment = {horizontal:"center"}; ws.getRow(1).height = 26;
+    const hr = ws.getRow(2); hr.values = head; hr.height = 34;
+    hr.eachCell(c=>{ c.font={bold:true,color:{argb:"FFFFFFFF"}}; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF009247"}}; c.alignment={horizontal:"center",vertical:"middle",wrapText:true}; });
+    rows.forEach((s,i)=>{ const d = s._d; const r = ws.addRow([i+1, s.ma_phieu, new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),d.getHours(),d.getMinutes())), s.khoa,
+      pii?s.ho_ten:"", pii?s.sdt:"", s.nps, s.thai_do, s.quy_trinh, s.csvc, s.gop_y||"", s.gop_y_khac||"", s.ma_ho_so||""]);
+      r.getCell(3).numFmt = "dd/mm/yyyy hh:mm"; r.eachCell({includeEmpty:true},c=>{ c.alignment={vertical:"top",wrapText:true}; }); });
+    const sum = wb.addWorksheet("Tong_hop");
+    sum.columns = [28,10,10,18,20,18,16].map(w=>({width:w}));
+    sum.addRow(["Khoa / Phòng khám","Số phiếu","NPS","% hài lòng Thái độ","% hài lòng Quy trình","% hài lòng CSVC","Phiếu không hài lòng"]).eachCell(c=>{ c.font={bold:true,color:{argb:"FFFFFFFF"}}; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF009247"}}; c.alignment={wrapText:true}; });
+    const m = new Map(); rows.forEach(s=>{ if(!m.has(s.khoa)) m.set(s.khoa,[]); m.get(s.khoa).push(s); });
+    [...m.entries()].sort((a,b)=>b[1].length-a[1].length).concat([["Toàn bệnh viện", rows]]).forEach(([k,r],i,arr)=>{
+      const row = sum.addRow([k, r.length, npsOf(r), okPct(r,"thai_do")/100, okPct(r,"quy_trinh")/100, okPct(r,"csvc")/100, r.filter(s=>s._bad).length]);
+      [4,5,6].forEach(c=>row.getCell(c).numFmt="0.0%"); if (i===arr.length-1) row.font = {bold:true}; });
+    sum.addRow([]); sum.addRow(["Ghi chú: NPS = % phiếu chấm 9–10 trừ % phiếu chấm 0–6. % hài lòng = tỷ lệ phiếu chấm mức 4–5. Số liệu tính tại thời điểm xuất file."]);
+    const buf = await wb.xlsx.writeBuffer(); const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+    a.download = `Khao_sat_hai_long_${$("kFrom").value||"dau"}_den_${$("kTo").value||"nay"}.xlsx`; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},1000);
+    toast(`Đã xuất ${rows.length} phiếu.`);
+  }catch(err){ console.error(err); toast("Không tạo được file: "+err.message); } finally{ busy(false); }
+};
+// ----- QR + cài đặt -----
+const surveyUrl = () => new URL("khao-sat.html", location.href).href;
+let qrDone = false;
+function renderQr(){
+  if (qrDone || typeof QRCode === "undefined") return;
+  $("qr").innerHTML = ""; new QRCode($("qr"), {text:surveyUrl(), width:512, height:512, correctLevel:QRCode.CorrectLevel.M});
+  $("qrUrl").href = $("qrUrl").textContent = surveyUrl(); qrDone = true;
+}
+const qrData = () => { const c = $("qr").querySelector("canvas"); return c ? c.toDataURL("image/png") : ($("qr").querySelector("img")||{}).src; };
+$("qrPng").onclick = ()=>{ const a = document.createElement("a"); a.href = qrData(); a.download = "QR_khao_sat_hai_long.png"; a.click(); };
+$("qrCopy").onclick = async ()=>{ try { await navigator.clipboard.writeText(surveyUrl()); toast("Đã sao chép đường dẫn."); } catch(e){ toast(surveyUrl(), 8000); } };
+$("qrPoster").onclick = ()=>{
+  const w = window.open("", "_blank"); if (!w){ toast("Trình duyệt chặn cửa sổ mới. Hãy cho phép popup rồi thử lại."); return; }
+  w.document.write(`<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><title>Poster khảo sát hài lòng</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+<style>@page{size:A5 portrait;margin:0}body{margin:0;font-family:"iCiel Graphit","Be Vietnam Pro",Arial,sans-serif;color:#17231D;background:#fff}
+.p{width:148mm;height:210mm;box-sizing:border-box;padding:14mm 12mm;display:flex;flex-direction:column;align-items:center;text-align:center}
+.h{font-size:11pt;font-weight:600;color:#006B34;letter-spacing:.2px}.t{font-size:24pt;font-weight:700;line-height:1.2;margin:7mm 0 3mm}
+.s{font-size:12pt;color:#3d4d44;margin:0 0 7mm;max-width:110mm}.q{border:3mm solid #009247;border-radius:6mm;padding:4mm;background:#fff}
+.q img{width:78mm;height:78mm;display:block}.c{font-size:13pt;font-weight:600;margin-top:7mm}.u{font-size:8pt;color:#58695F;margin-top:auto;word-break:break-all}</style></head>
+<body><div class="p"><div class="h">BỆNH VIỆN ĐA KHOA SÀI GÒN TAM KỲ</div><div class="t">Ông/Bà hài lòng<br>với dịch vụ hôm nay?</div>
+<p class="s">Dành 1 phút góp ý để bệnh viện phục vụ tốt hơn.</p><div class="q"><img src="${qrData()}" alt="Mã QR khảo sát"></div>
+<div class="c">Quét mã QR bằng camera điện thoại</div><div class="u">${surveyUrl()}</div></div>
+<script>window.onload=()=>setTimeout(()=>window.print(),400)<\/script></body></html>`);
+  w.document.close();
+};
+function fillSettings(){
+  $("setKhoa").value = (SETTINGS.khoa||[]).join("\n"); $("setNps").value = SETTINGS.nguong.nps_max; $("setCsat").value = SETTINGS.nguong.csat_max;
+  const ro = !isAdmin(); ["setKhoa","setNps","setCsat"].forEach(id=>$(id).disabled = ro); $("setSave").hidden = ro;
+  $("setNote").textContent = ro ? "Chỉ Admin được thay đổi cài đặt phiếu." :
+    `Hiện tại: phiếu có NPS từ 0–${SETTINGS.nguong.nps_max} (khách không sẵn sàng giới thiệu) hoặc có hạng mục chấm mức 1–${SETTINGS.nguong.csat_max} sẽ tự tạo hồ sơ phàn nàn "Mới tiếp nhận". Đổi khoa không ảnh hưởng phiếu cũ.`;
+}
+$("setSave").onclick = async ()=>{
+  const khoa = [...new Set($("setKhoa").value.split("\n").map(one).filter(Boolean))];
+  const nps = parseInt($("setNps").value,10), cs = parseInt($("setCsat").value,10);
+  if (!khoa.length){ toast("Danh sách khoa không được để trống."); return; }
+  if (!(nps>=0 && nps<=9) || !(cs>=1 && cs<=4)){ toast("Ngưỡng NPS phải từ 0 đến 9, ngưỡng hạng mục từ 1 đến 4."); return; }
+  try{
+    await call("phkh_settings_save", {p_key:"khoa", p_value:khoa});
+    await call("phkh_settings_save", {p_key:"nguong", p_value:{nps_max:nps, csat_max:cs}});
+    SETTINGS = {khoa, nguong:{nps_max:nps, csat_max:cs}}; prepSurveys(SURVEYS); fillSettings(); buildKsFilters(); renderKs(); toast("Đã lưu cài đặt phiếu khảo sát.");
+  }catch(err){ toast("Không lưu được: "+err.message); }
+};
+async function loadSurveys(){
+  try{
+    const st = await call("phkh_settings_get"); SETTINGS = {khoa: st.khoa||[], nguong: Object.assign({nps_max:6, csat_max:2}, st.nguong||{})};
+    SURVEYS = prepSurveys(await call("phkh_survey_list"));
+  }catch(e){ console.warn("Khảo sát:", e.message); SURVEYS = []; }
+}
 // ======================================================================
 // KHỞI ĐỘNG: dùng lại phiên của tool, hoặc phiên ONE MSG nếu cùng tên miền
 // ======================================================================
