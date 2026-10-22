@@ -31,7 +31,7 @@ button,input,select,textarea{font:inherit}
 .btn.sm{padding:5px 10px;font-size:13px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
-select,input[type=search],input[type=text],input[type=password],input[type=month],input[type=datetime-local],textarea{font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:7px 9px;min-width:0}
+select,input[type=search],input[type=text],input[type=password],input[type=month],input[type=date],input[type=datetime-local],textarea{font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:7px 9px;min-width:0}
 textarea{resize:vertical;min-height:64px;width:100%}
 label.f{display:flex;flex-direction:column;font-size:12.5px;color:var(--muted);gap:3px}
 label.f > *{width:100%}
@@ -173,12 +173,13 @@ tr.sel td{background:var(--mint)}
   <div class="auth-card">
     <div class="mark">MSG</div>
     <h2>Quản lý phàn nàn khách hàng</h2>
-    <p>Bệnh viện Đa khoa Sài Gòn Tam Kỳ. Đăng nhập bằng mã nhân viên và mật khẩu ONE MSG.</p>
+    <p>Bệnh viện Đa khoa Sài Gòn Tam Kỳ. Đăng nhập bằng mã nhân viên và mật khẩu.</p>
     <form id="fLogin">
       <label class="f">Mã nhân viên<input type="text" id="lgUser" autocomplete="username" required></label>
       <label class="f">Mật khẩu<input type="password" id="lgPw" autocomplete="current-password" required></label>
       <div class="err" id="lgErr" role="alert"></div>
       <button class="btn" type="submit" id="lgBtn">Đăng nhập</button>
+      <p style="text-align:center;margin:2px 0 0"><button type="button" class="linkbtn" id="btnForgot">Quên mật khẩu?</button></p>
     </form>
   </div>
 </div>
@@ -343,8 +344,13 @@ tr.sel td{background:var(--mint)}
 
 <!-- ===== TAB NGƯỜI DÙNG ===== -->
 <div id="tab-users" role="tabpanel" hidden>
+  <section id="reqBox" style="border-top:0;padding-bottom:6px">
+    <h2>Yêu cầu cấp lại mật khẩu <span class="role-badge" id="reqCount" hidden></span></h2>
+    <p class="hint" id="reqHint">Khi nhân viên bấm "Quên mật khẩu?" ở màn hình đăng nhập, yêu cầu sẽ hiện ở đây. Trước khi cấp mật khẩu tạm, hãy xác minh đúng người (gọi điện hoặc gặp trực tiếp).</p>
+    <div id="reqBody"></div>
+  </section>
   <div class="toolbar">
-    <div><h2 style="margin:0">Người dùng</h2><p class="hint" style="margin:0">Admin: toàn quyền, quản lý người dùng. Nhập liệu: thêm, sửa, import hồ sơ. Chỉ xem: xem dashboard và danh sách, không thấy tên và SĐT khách hàng. Tài khoản, mật khẩu và đặt lại mật khẩu quản lý bên ONE MSG; ở đây chỉ cấp quyền dùng tool. Admin ONE MSG tự động là Admin của tool.</p></div>
+    <div><h2 style="margin:0">Người dùng</h2><p class="hint" style="margin:0">Admin: toàn quyền, quản lý người dùng. Nhập liệu: thêm, sửa, import hồ sơ. Chỉ xem: xem dashboard và danh sách, không thấy tên và SĐT khách hàng. Cột "Tài khoản đăng nhập" dùng để tạo tài khoản, cấp mật khẩu tạm, khóa hoặc mở khóa đăng nhập.</p></div>
     <div class="acts">
       <button class="btn" id="btnUAdd">+ Cấp quyền cho 1 người</button>
       <input type="file" id="fileUsers" accept=".xlsx,.xls" hidden>
@@ -356,11 +362,11 @@ tr.sel td{background:var(--mint)}
     <label style="flex:1;min-width:220px">Tìm kiếm<input type="search" id="uQ" placeholder="Mã NV, họ tên, khoa phòng…"></label>
     <label>Quyền<select id="uR"><option value="">Tất cả</option><option value="admin">Admin</option><option value="editor">Nhập liệu</option><option value="viewer">Chỉ xem</option></select></label>
   </div>
-  <div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>Mã NV</th><th>Họ và tên</th><th>Chức danh</th><th>Khoa/Phòng</th><th>Quyền</th><th>Trạng thái</th><th>Tài khoản ONE MSG</th><th></th></tr></thead><tbody id="uBody"></tbody></table></div>
+  <div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>Mã NV</th><th>Họ và tên</th><th>Chức danh</th><th>Khoa/Phòng</th><th>Quyền trong tool</th><th>Được dùng tool</th><th>Tài khoản đăng nhập</th><th></th></tr></thead><tbody id="uBody"></tbody></table></div>
   <p class="meta" id="uInfo"></p>
 </div>
 </main>
-<footer><div class="wrap">Dữ liệu lưu trên Supabase (project ONE MSG), đăng nhập bằng tài khoản ONE MSG; chỉ người được cấp quyền trong tool này mới xem được. Người có quyền Chỉ xem không thấy họ tên và số điện thoại khách hàng.</div></footer>
+<footer><div class="wrap">Dữ liệu lưu trên Supabase; chỉ người được cấp quyền trong tool này mới xem được. Người có quyền Chỉ xem không thấy họ tên và số điện thoại khách hàng.</div></footer>
 </div>
 
 <!-- ===== MODAL: HỒ SƠ ===== -->
@@ -402,13 +408,27 @@ tr.sel td{background:var(--mint)}
       <label class="f">Ngày hoàn tất<input type="datetime-local" id="r_ht"></label>
       <label class="f span2">Mức độ hài lòng sau xử lý<select id="r_hl"></select></label>
     </div></fieldset>
-    <fieldset><legend>4. Nguyên nhân và cải tiến</legend><div class="g g2">
+    <fieldset><legend>4. Nguyên nhân gốc và kế hoạch CAPA (PL4)</legend>
+    <p class="meta" style="margin:0 0 10px">Bắt buộc với hồ sơ cấp độ Đỏ/Vàng hoặc khiếu nại lặp lại. Hồ sơ có RCA hoặc CAPA sẽ được xuất vào PL4.</p>
+    <div class="g g2">
       <label class="f">Nhóm nguyên nhân gốc (PL4)<select id="r_pcode"><option value="">Chọn để chèn mã vào RCA</option></select></label>
       <div></div>
-      <label class="f">Nguyên nhân gốc (RCA)<textarea id="r_rca" rows="3"></textarea></label>
-      <label class="f">Hành động cải tiến (CAPA)<textarea id="r_capa" rows="3"></textarea></label>
-      <label class="f span4" style="grid-column:1/-1">Ghi chú (escalation, chuyển BGĐ, khách từ chối phản hồi…)<textarea id="r_gc" rows="2"></textarea></label>
+      <label class="f span4" style="grid-column:1/-1">Nguyên nhân gốc (RCA)<textarea id="r_rca" rows="2"></textarea></label>
+      <label class="f">Hành động khắc phục (Corrective)<textarea id="r_capa" rows="3" placeholder="Biện pháp xử lý ngay sự việc đã xảy ra"></textarea></label>
+      <label class="f">Hành động phòng ngừa (Preventive)<textarea id="r_pn" rows="3" placeholder="Biện pháp lâu dài để không tái diễn"></textarea></label>
+    </div>
+    <div class="g g4" style="margin-top:12px">
+      <label class="f">Đơn vị phụ trách CAPA<input type="text" id="r_cdv" list="dlDonvi"></label>
+      <label class="f">Người phụ trách CAPA<input type="text" id="r_cng" list="dlNguoi"></label>
+      <label class="f">Thời hạn hoàn thành<input type="date" id="r_chan"></label>
+      <label class="f">Trạng thái CAPA<select id="r_ctt"></select></label>
+      <label class="f">Ngày hoàn thành thực tế<input type="date" id="r_cht"></label>
+      <label class="f span3" style="grid-column:span 3">Hiệu quả sau cải tiến<input type="text" id="r_chq" placeholder="vd: thời gian chờ giảm từ 45 xuống 18 phút; không tái diễn trong 3 tháng"></label>
+      <label class="f span4" style="grid-column:1/-1">Ghi chú CAPA<input type="text" id="r_cgc"></label>
     </div></fieldset>
+    <fieldset><legend>5. Ghi chú</legend>
+      <label class="f">Ghi chú (escalation, chuyển BGĐ, khách từ chối phản hồi…)<textarea id="r_gc" rows="2"></textarea></label>
+    </fieldset>
     <p class="meta" id="recMeta"></p>
   </div>
   <div class="m-foot"><button type="button" class="btn danger" id="recDel" hidden>Xóa hồ sơ</button>
@@ -427,7 +447,7 @@ tr.sel td{background:var(--mint)}
 
 <!-- ===== MODAL: EXPORT ===== -->
 <dialog id="dlgExp" class="narrow" aria-labelledby="expTitle">
-  <div class="m-head"><h3 id="expTitle">Export Excel theo mẫu PL1</h3><button type="button" class="x" data-close aria-label="Đóng">×</button></div>
+  <div class="m-head"><h3 id="expTitle">Export Excel theo mẫu PL1 và PL4</h3><button type="button" class="x" data-close aria-label="Đóng">×</button></div>
   <div class="m-body"><div class="g g2">
     <label class="f">Từ tháng<input type="month" id="eFrom"></label>
     <label class="f">Đến tháng<input type="month" id="eTo"></label>
@@ -442,7 +462,7 @@ tr.sel td{background:var(--mint)}
   <form id="fUser" method="dialog">
   <div class="m-head"><h3 id="uTitle">Người dùng</h3><button type="button" class="x" data-close aria-label="Đóng">×</button></div>
   <div class="m-body"><div class="g g2">
-    <label class="f"><span class="req">Mã nhân viên (mã đăng nhập ONE MSG)</span><input type="text" id="u_ma" required></label>
+    <label class="f"><span class="req">Mã nhân viên (mã đăng nhập)</span><input type="text" id="u_ma" required></label>
     <label class="f"><span class="req">Quyền</span><select id="u_role"><option value="viewer">Chỉ xem</option><option value="editor">Nhập liệu</option><option value="admin">Admin</option></select></label>
     <label class="f span2" style="grid-column:1/-1"><span class="req">Họ và tên</span><input type="text" id="u_ten" required></label>
     <label class="f">Chức danh<input type="text" id="u_cd"></label>
@@ -459,6 +479,24 @@ tr.sel td{background:var(--mint)}
   <div class="m-foot"><div class="r"><button type="button" class="btn ghost" data-close>Hủy</button><button type="button" class="btn" id="uiGo">Cấp / cập nhật quyền</button></div></div>
 </dialog>
 
+<!-- ===== MODAL: QUÊN MẬT KHẨU ===== -->
+<dialog id="dlgForgot" class="narrow" aria-labelledby="fgTitle">
+  <form id="fForgot" method="dialog">
+  <div class="m-head"><h3 id="fgTitle">Quên mật khẩu</h3><button type="button" class="x" data-close aria-label="Đóng">×</button></div>
+  <div class="m-body"><p style="margin-top:0">Nhập mã nhân viên của bạn. Quản trị viên sẽ nhận được yêu cầu và liên hệ để cấp mật khẩu tạm.</p>
+    <label class="f">Mã nhân viên<input type="text" id="fgUser" autocomplete="username" required></label><div class="err" id="fgErr" role="alert"></div></div>
+  <div class="m-foot"><div class="r"><button type="button" class="btn ghost" data-close>Hủy</button><button type="submit" class="btn" id="fgBtn">Gửi yêu cầu</button></div></div>
+  </form>
+</dialog>
+<!-- ===== MODAL: MẬT KHẨU TẠM ===== -->
+<dialog id="dlgTmp" class="narrow" aria-labelledby="tmpTitle">
+  <div class="m-head"><h3 id="tmpTitle">Mật khẩu tạm</h3><button type="button" class="x" data-close aria-label="Đóng">×</button></div>
+  <div class="m-body"><p style="margin-top:0" id="tmpWho"></p>
+    <div style="display:flex;gap:8px"><input type="text" readonly id="tmpPw" style="flex:1;font-size:22px;font-weight:700;letter-spacing:.08em;text-align:center"><button type="button" class="btn" id="tmpCopy">Sao chép</button></div>
+    <p class="meta" style="margin:10px 0 0">Mật khẩu chỉ hiện <b>một lần</b>. Hãy đọc cho đúng người sau khi xác minh. Họ sẽ phải đặt mật khẩu mới ngay khi đăng nhập.</p>
+    <div class="warnbox" id="tmpLocked" style="margin:10px 0 0" hidden>Tài khoản này đang bị khóa đăng nhập. Bấm "Mở khóa TK" ở danh sách người dùng thì họ mới đăng nhập được.</div></div>
+  <div class="m-foot"><div class="r"><button type="button" class="btn" data-close>Đã ghi lại, đóng</button></div></div>
+</dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="loading" id="loading" hidden>Đang xử lý…</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -483,6 +521,12 @@ const PL7_DETAILS = ["G01-01 – Giải thích bệnh/chẩn đoán chưa rõ", 
 const KENH = ["Trực tiếp","Hotline","Facebook","Google Review","TikTok","Zalo","Messenger","Email","Website","NPS","CSAT","Khác"];
 const TINH_TRANG = ["Mới tiếp nhận","Đã phân công","Đang xử lý","Chờ khách hàng phản hồi","Hoàn tất","Đóng hồ sơ"];
 const HAI_LONG = ["Rất hài lòng","Hài lòng","Bình thường","Không hài lòng","Không liên hệ được"];
+const CAPA_TT = ["Chưa thực hiện","Đang thực hiện","Hoàn thành"];   // "Quá hạn" do hệ thống tự xác định theo thời hạn
+const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+const hasCapa = r => !!(r.capa || r.capa_phong_ngua);
+const capaOver = r => !!(r.capa_han && r.capa_trang_thai !== "Hoàn thành" && String(r.capa_han).slice(0,10) < todayStr());
+const capaStatus = r => !hasCapa(r) && !r.capa_trang_thai ? "" : capaOver(r) ? "Quá hạn" : (r.capa_trang_thai || "Chưa thực hiện");
+const fmtD = v => { if (!v) return ""; const m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : ""; };
 const PCODES = ["P1 – Con người","P2 – Quy trình","P3 – Chính sách","P4 – Đào tạo/Năng lực","P5 – Trang thiết bị","P6 – Cơ sở vật chất","P7 – Hệ thống CNTT","P8 – Truyền thông/Giao tiếp","P9 – Nhà cung cấp/Đối tác","P10 – Khác"];
 const ROLE_VN = {admin:"Admin", editor:"Nhập liệu", viewer:"Chỉ xem"};
 const DONE = ["hoàn tất","đóng hồ sơ"];
@@ -518,7 +562,7 @@ const isEditor = () => ME && (ME.role==="admin" || ME.role==="editor");
 const isAdmin  = () => ME && ME.role==="admin";
 
 // ===== Kết nối Supabase: chỉ gọi hàm (RPC), không đọc bảng trực tiếp =====
-let TOKEN = null, ME = null, DATA = [], USERS = [], ONE_USERS = null;
+let TOKEN = null, ME = null, DATA = [], USERS = [], ONE_USERS = null, ONE_REQ = [], ONE_SET = {};
 const lsGet = k => { try { return localStorage.getItem(k); } catch(e){ return null; } };
 const lsSet = (k,v) => { try { localStorage.setItem(k,v); } catch(e){} };
 const lsDel = k => { try { localStorage.removeItem(k); } catch(e){} };
@@ -551,7 +595,10 @@ async function loadData(){
 }
 async function loadOneUsers(){ // danh sách tài khoản ONE MSG, chỉ lấy được khi là Admin ONE MSG
   ONE_USERS = null; if (!ME.oneAdmin) return;
-  try { const r = await rpc("onemsg_admin_all", {p_token:TOKEN}); ONE_USERS = new Map((r.users||[]).map(u=>[String(u.username).toLowerCase(), u])); } catch(e){ ONE_USERS = null; }
+  try { const r = await rpc("onemsg_admin_all", {p_token:TOKEN});
+    ONE_USERS = new Map((r.users||[]).map(u=>[String(u.username).toLowerCase(), u]));
+    ONE_REQ = (r.requests||[]).filter(q=>(r.users||[]).some(u=>u.id===q.userId)); ONE_SET = r.settings || {};
+  } catch(e){ ONE_USERS = null; ONE_REQ = []; }
 }
 function prepRows(rows){
   rows.forEach(r=>{
@@ -604,8 +651,8 @@ $("fLogin").onsubmit = async e=>{
 };
 function openChange(forced){
   $("chCurWrap").hidden = forced; $("chCancel").hidden = forced;
-  $("chIntro").textContent = forced ? "Đây là lần đăng nhập đầu tiên (hoặc mật khẩu vừa được đặt lại). Vui lòng đặt mật khẩu mới để tiếp tục. Mật khẩu này dùng chung với ONE MSG."
-                                    : "Đổi mật khẩu tài khoản ONE MSG của bạn (dùng chung cho mọi tool trong ONE MSG).";
+  $("chIntro").textContent = forced ? "Đây là lần đăng nhập đầu tiên (hoặc mật khẩu vừa được cấp lại). Vui lòng đặt mật khẩu mới để tiếp tục."
+                                    : "Đổi mật khẩu đăng nhập của bạn.";
   $("chErr").textContent = ""; ["chCur","chPw1","chPw2"].forEach(id=>$(id).value=""); show("scrChange");
 }
 $("fChange").onsubmit = async e=>{
@@ -663,10 +710,11 @@ const RULES = {
   noSLA:    {label:"Thiếu SLA hoặc người xử lý", fn:r=>!(r.sla && r.nguoi_xu_ly)},
   redOver:  {label:"Cấp độ Đỏ quá SLA", fn:r=>r._risk==="Đỏ" && overdue(r)===true},
   rca:      {label:"Cần RCA nhưng chưa cập nhật", fn:r=>needRCA(r) && !r.rca},
-  capa:     {label:"Cần CAPA nhưng chưa cập nhật", fn:r=>needCAPA(r) && !r.capa},
+  capa:     {label:"Cần CAPA nhưng chưa cập nhật", fn:r=>needCAPA(r) && !hasCapa(r)},
+  capaOver: {label:"CAPA quá hạn", fn:r=>capaOver(r)},
   openOver: {label:"Hồ sơ mở quá SLA", fn:r=>!r._done && overdue(r)===true},
   open:     {label:"Hồ sơ chưa hoàn tất", fn:r=>!r._done},
-  closeBad: {label:"Đã đóng nhưng chưa đủ điều kiện đóng", fn:r=>r._done && (!r.ngay_hoan_tat || /không hài lòng/i.test(r.muc_do_hai_long||"") || (needCAPA(r)&&!r.capa))},
+  closeBad: {label:"Đã đóng nhưng chưa đủ điều kiện đóng", fn:r=>r._done && (!r.ngay_hoan_tat || /không hài lòng/i.test(r.muc_do_hai_long||"") || (needCAPA(r)&&!hasCapa(r)))},
   unhappy:  {label:"Khách không hài lòng nhưng đã đóng", fn:r=>r._done && /không hài lòng/i.test(r.muc_do_hai_long||"")},
   redEsc:   {label:"Case Đỏ đã đóng chưa ghi nhận leo thang", fn:r=>r._done && r._risk==="Đỏ" && !/bgđ|ban giám đốc|hcoo|\bho\b|leo thang|escalat/i.test(r.ghi_chu||"")},
   google:   {label:"Hồ sơ từ Google Review", fn:r=>/google/i.test(r._kenh)},
@@ -807,6 +855,7 @@ function checklist(rows){
   const sop = [
     ["Chỉ đóng khi đủ điều kiện?", auto(c("closeBad"), `Theo SOP: chỉ đóng khi đã xử lý xong, đã phản hồi khách, không còn action mở (có ngày hoàn tất, có CAPA nếu thuộc diện cần). ${c("closeBad")} hồ sơ đã đóng nhưng chưa đủ điều kiện.`, "closeBad")],
     ["Khách chưa hài lòng thì không đóng case?", auto(c("unhappy"), `${c("unhappy")} hồ sơ ghi "Không hài lòng" nhưng đã đóng. Theo SOP phải quay lại bước xử lý.`, "unhappy")],
+    ["Không còn CAPA quá hạn?", rows.some(hasCapa) ? auto(c("capaOver"), `${c("capaOver")} kế hoạch CAPA đã quá thời hạn hoàn thành mà chưa Hoàn thành (theo PL4). Tổng hồ sơ có CAPA: ${rows.filter(hasCapa).length}.`, "capaOver") : noData("Chưa có hồ sơ nào có kế hoạch CAPA.")],
     ["Case ĐỎ đã leo thang trước khi đóng?", rows.some(r=>r._risk==="Đỏ"&&r._done) ? auto(c("redEsc"), `${c("redEsc")} case Đỏ đã đóng nhưng Ghi chú chưa thể hiện việc báo BGĐ/HCOO/HO.`, "redEsc") : noData("Chưa có case Đỏ nào đã đóng để kiểm tra.")]
   ];
   const lbl = {ok:"Đạt",no:"Chưa đạt",man:"Kiểm thủ công",warn:"Thiếu dữ liệu"};
@@ -837,13 +886,13 @@ $("pgPrev").onclick=()=>{dpage--;dTable();}; $("pgNext").onclick=()=>{dpage++;dT
 let lpage = 0; const LPS = 50;
 function buildListFilters(){
   opts($("lN"), PL7_GROUPS.map(g=>[groupCode(g), groupLabel(groupCode(g))]).concat([["none","Chưa phân loại"]]), "Tất cả");
-  opts($("lT"), TINH_TRANG.map(t=>[t,t]).concat([["__open","Đang mở (chưa hoàn tất/đóng)"]]), "Tất cả");
+  opts($("lT"), TINH_TRANG.map(t=>[t,t]).concat([["__open","Đang mở (chưa hoàn tất/đóng)"],["__capa","Có kế hoạch CAPA"],["__capaover","CAPA quá hạn"]]), "Tất cả");
 }
 function lFiltered(){
   const f = ymFromInput($("lFrom").value), t = ymFromInput($("lTo").value), n=$("lN").value, rk=$("lR").value, tt=$("lT").value;
   const q = one($("lQ").value).toLowerCase();
   return DATA.filter(r => (!f||r._ym>=f) && (!t||r._ym<=t) && (!n||(n==="none"?!r._g:r._g===n)) &&
-    (!rk||(rk==="none"?!r._risk:r._risk===rk)) && (!tt||(tt==="__open"?!r._done:r._tt===tt)) &&
+    (!rk||(rk==="none"?!r._risk:r._risk===rk)) && (!tt||(tt==="__open"?!r._done:tt==="__capa"?hasCapa(r):tt==="__capaover"?capaOver(r):r._tt===tt)) &&
     (!q || [r.ma_ho_so,r.noi_dung,isEditor()?r.ho_ten_kh:"",isEditor()?r.sdt:"",r.don_vi,r.nguoi_xu_ly,r.chi_tiet_nhom,r._kenh].join(" ").toLowerCase().includes(q)))
     .sort((a,b)=> b._ym-a._ym || String(b.ma_ho_so).localeCompare(String(a.ma_ho_so)));
 }
@@ -877,6 +926,9 @@ setOpts($("r_kenh"), KENH, "Chọn kênh");
 setOpts($("r_nhom"), PL7_GROUPS.map(one), "Chọn nhóm");
 setOpts($("r_tt"), TINH_TRANG);
 setOpts($("r_hl"), HAI_LONG, "Chưa khảo sát");
+setOpts($("r_ctt"), CAPA_TT, "Chưa có kế hoạch");
+$("r_ctt").onchange = ()=>{ if ($("r_ctt").value==="Hoàn thành" && !$("r_cht").value) $("r_cht").value = todayStr(); };
+$("r_capa").addEventListener("change", ()=>{ if ($("r_capa").value && !$("r_cdv").value) $("r_cdv").value = $("r_dv").value; if ($("r_capa").value && !$("r_ctt").value) $("r_ctt").value = "Chưa thực hiện"; });
 PCODES.forEach(p=>$("r_pcode").insertAdjacentHTML("beforeend", `<option>${p}</option>`));
 function fillDetails(g, cur){ setOpts($("r_ct"), g ? detailsOf(groupCode(g)) : PL7_DETAILS, "Chọn chi tiết"); ensureOpt($("r_ct"), cur); }
 $("r_nhom").onchange = ()=>fillDetails($("r_nhom").value, "");
@@ -914,6 +966,8 @@ function openRec(id){
   $("r_risk").value = r?.cap_do_rui_ro||""; $("r_dv").value = r?.don_vi||""; $("r_nxl").value = r?.nguoi_xu_ly||""; $("r_sla").value = r?.sla||"";
   ensureOpt($("r_tt"), r?.tinh_trang || "Mới tiếp nhận"); $("r_ht").value = toLocalInput(r?.ngay_hoan_tat);
   ensureOpt($("r_hl"), r?.muc_do_hai_long||""); $("r_rca").value = r?.rca||""; $("r_capa").value = r?.capa||""; $("r_gc").value = r?.ghi_chu||"";
+  $("r_pn").value = r?.capa_phong_ngua||""; $("r_cdv").value = r?.capa_don_vi||""; $("r_cng").value = r?.capa_nguoi||""; $("r_chan").value = (r?.capa_han||"").slice(0,10);
+  ensureOpt($("r_ctt"), r?.capa_trang_thai||""); $("r_cht").value = (r?.capa_ngay_ht||"").slice(0,10); $("r_chq").value = r?.capa_hieu_qua||""; $("r_cgc").value = r?.capa_ghi_chu||"";
   $("pl3").hidden = true; $("pl3").querySelectorAll("input").forEach(i=>i.checked=false);
   $("fRec").querySelectorAll("input,select,textarea").forEach(el=>{ if (el.id!=="r_ky") el.disabled = ro; });
   if (ro) $("r_ky").disabled = true;
@@ -931,7 +985,10 @@ function readForm(){
     nhom: $("r_nhom").value||null, chi_tiet_nhom: $("r_ct").value||null, cap_do_rui_ro: $("r_risk").value||null,
     don_vi: one($("r_dv").value)||null, nguoi_xu_ly: one($("r_nxl").value)||null, sla: one($("r_sla").value)||null,
     tinh_trang: $("r_tt").value, ngay_hoan_tat: fromLocalInput($("r_ht").value), muc_do_hai_long: $("r_hl").value||null,
-    rca: norm($("r_rca").value)||null, capa: norm($("r_capa").value)||null, ghi_chu: norm($("r_gc").value)||null
+    rca: norm($("r_rca").value)||null, capa: norm($("r_capa").value)||null, ghi_chu: norm($("r_gc").value)||null,
+    capa_phong_ngua: norm($("r_pn").value)||null, capa_don_vi: one($("r_cdv").value)||null, capa_nguoi: one($("r_cng").value)||null,
+    capa_han: $("r_chan").value||null, capa_trang_thai: $("r_ctt").value||null, capa_ngay_ht: $("r_cht").value||null,
+    capa_hieu_qua: norm($("r_chq").value)||null, capa_ghi_chu: norm($("r_cgc").value)||null
   };
   if (ky){ o.nam = Math.floor(ky/100); o.thang = ky%100; }
   if (!editing) o.ma_ho_so = one($("r_ma").value)||null;
@@ -942,7 +999,9 @@ function sopWarnings(o){
   const tmp = {...o, _risk:o.cap_do_rui_ro||"", _repeat:false, _done:done};
   if (done && !o.ngay_hoan_tat) w.push("Chưa ghi Ngày hoàn tất.");
   if (done && /không hài lòng/i.test(o.muc_do_hai_long||"")) w.push("Khách đang Không hài lòng: theo SOP phải quay lại bước xử lý, không đóng case.");
-  if (done && needCAPA(tmp) && !o.capa) w.push("Hồ sơ cấp độ Đỏ/Vàng cần có CAPA trước khi đóng.");
+  if (done && needCAPA(tmp) && !hasCapa(o)) w.push("Hồ sơ cấp độ Đỏ/Vàng cần có CAPA trước khi đóng.");
+  if (o.capa_trang_thai==="Hoàn thành" && !o.capa_ngay_ht) w.push("CAPA đã Hoàn thành nhưng chưa ghi Ngày hoàn thành thực tế.");
+  if (hasCapa(o) && !o.capa_han) w.push("Kế hoạch CAPA chưa có Thời hạn hoàn thành.");
   if (done && o.cap_do_rui_ro==="Đỏ" && !/bgđ|ban giám đốc|hcoo|\bho\b|leo thang|escalat/i.test(o.ghi_chu||"")) w.push("Case Đỏ: Ghi chú chưa thể hiện việc leo thang BGĐ/HCOO/HO.");
   return w;
 }
@@ -954,7 +1013,7 @@ $("fRec").onsubmit = async e=>{
   if (!o.ngay_tiep_nhan && !ky){ toast("Vui lòng nhập Ngày giờ tiếp nhận hoặc Kỳ (tháng)."); $("r_ngay").focus(); return; }
   if (!editing && o.ma_ho_so && DATA.some(r=>r.ma_ho_so===o.ma_ho_so)){ toast("Mã hồ sơ này đã tồn tại. Để trống để hệ thống tự sinh."); return; }
   const w = sopWarnings(o);
-  if (w.length && !warnAck){ $("recWarn").innerHTML = `<b>Chưa đủ điều kiện đóng hồ sơ theo SOP:</b><ul style="margin:6px 0 0 18px;padding:0">${w.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><div style="margin-top:6px">Bấm Lưu hồ sơ lần nữa nếu vẫn muốn lưu.</div>`; $("recWarn").hidden = false; $("dlgRec").querySelector(".m-body").scrollTop = 0; warnAck = true; return; }
+  if (w.length && !warnAck){ $("recWarn").innerHTML = `<b>Cần kiểm tra trước khi lưu:</b><ul style="margin:6px 0 0 18px;padding:0">${w.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><div style="margin-top:6px">Bấm Lưu hồ sơ lần nữa nếu vẫn muốn lưu.</div>`; $("recWarn").hidden = false; $("dlgRec").querySelector(".m-body").scrollTop = 0; warnAck = true; return; }
   warnAck = false; $("recSave").disabled = true;
   try{
     if (editing){ o.id = editing.id; if (!ky){ o.nam = editing.nam; o.thang = editing.thang; } }
@@ -980,8 +1039,27 @@ const PL1_HEAD = ["STT\n(1)","Mã hồ sơ\n(2)","Ngày tiếp nhận\n(3)","Cơ
 const PL1_KEYS = ["stt","ma_ho_so","ngay","co_so","kenh","ho_ten_kh","sdt","noi_dung","nhom","chi_tiet_nhom","cap_do_rui_ro","don_vi","nguoi_xu_ly","sla","tinh_trang","ngay_hoan_tat","muc_do_hai_long","rca","capa","ghi_chu"];
 const headKey = h => one(String(h).replace(/\(\d+\)/g,"")).toLowerCase();
 const HEAD_MAP = PL1_HEAD.map(headKey);
-const CMP = ["nam","thang","ngay_tiep_nhan","co_so","kenh","ho_ten_kh","sdt","noi_dung","nhom","chi_tiet_nhom","cap_do_rui_ro","don_vi","nguoi_xu_ly","sla","tinh_trang","ngay_hoan_tat","muc_do_hai_long","rca","capa","ghi_chu"];
-const LABEL = {nam:"Năm",thang:"Tháng",ngay_tiep_nhan:"Ngày tiếp nhận",co_so:"Cơ sở",kenh:"Kênh",ho_ten_kh:"Họ tên KH",sdt:"SĐT",noi_dung:"Nội dung",nhom:"Nhóm",chi_tiet_nhom:"Chi tiết nhóm",cap_do_rui_ro:"Cấp độ rủi ro",don_vi:"Đơn vị",nguoi_xu_ly:"Người xử lý",sla:"SLA",tinh_trang:"Tình trạng",ngay_hoan_tat:"Ngày hoàn tất",muc_do_hai_long:"Mức độ hài lòng",rca:"RCA",capa:"CAPA",ghi_chu:"Ghi chú"};
+const CMP = ["nam","thang","ngay_tiep_nhan","co_so","kenh","ho_ten_kh","sdt","noi_dung","nhom","chi_tiet_nhom","cap_do_rui_ro","don_vi","nguoi_xu_ly","sla","tinh_trang","ngay_hoan_tat","muc_do_hai_long","rca","capa","ghi_chu","capa_phong_ngua","capa_don_vi","capa_nguoi","capa_han","capa_trang_thai","capa_ngay_ht","capa_hieu_qua","capa_ghi_chu"];
+const LABEL = {nam:"Năm",thang:"Tháng",ngay_tiep_nhan:"Ngày tiếp nhận",co_so:"Cơ sở",kenh:"Kênh",ho_ten_kh:"Họ tên KH",sdt:"SĐT",noi_dung:"Nội dung",nhom:"Nhóm",chi_tiet_nhom:"Chi tiết nhóm",cap_do_rui_ro:"Cấp độ rủi ro",don_vi:"Đơn vị",nguoi_xu_ly:"Người xử lý",sla:"SLA",tinh_trang:"Tình trạng",ngay_hoan_tat:"Ngày hoàn tất",muc_do_hai_long:"Mức độ hài lòng",rca:"RCA",capa:"Hành động khắc phục",ghi_chu:"Ghi chú",capa_phong_ngua:"Hành động phòng ngừa",capa_don_vi:"Đơn vị phụ trách CAPA",capa_nguoi:"Người phụ trách CAPA",capa_han:"Thời hạn CAPA",capa_trang_thai:"Trạng thái CAPA",capa_ngay_ht:"Ngày hoàn thành CAPA",capa_hieu_qua:"Hiệu quả sau cải tiến",capa_ghi_chu:"Ghi chú CAPA"};
+const PL4_HEAD = ["STT\n(1)","Mã hồ sơ\n(2)","Bệnh viện\n(3)","Nội dung phản ánh/khiếu nại (4)","Nguyên nhân gốc (RCA)\n(5)","Hành động khắc phục (6)","Hành động phòng ngừa (7)","Đơn vị phụ trách\n(8)","Người phụ trách\n(9)","Thời hạn hoàn thành\n(10)","Trạng thái\n(11)","Ngày hoàn thành\n(12)","Hiệu quả sau cải tiến\n(13)","Ghi chú\n(14)"];
+const PL4_MAP = {ma_ho_so:"mã hồ sơ", rca:"nguyên nhân gốc", capa:"hành động khắc phục", capa_phong_ngua:"hành động phòng ngừa", capa_don_vi:"đơn vị phụ trách", capa_nguoi:"người phụ trách", capa_han:"thời hạn hoàn thành", capa_trang_thai:"trạng thái", capa_ngay_ht:"ngày hoàn thành", capa_hieu_qua:"hiệu quả sau cải tiến", capa_ghi_chu:"ghi chú"};
+const isoDate = d => d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}` : null;
+function splitCapa(t){ t = norm(t); if (!t) return {capa:null}; const m = t.split(/\n?Phòng ngừa:\s*/i); return m.length>1 ? {capa: norm(m[0].replace(/^Khắc phục:\s*/i,""))||null, capa_phong_ngua: norm(m.slice(1).join(" "))||null} : {capa:t}; }
+function readPL4(wb){ // trả về Map mã hồ sơ -> các cột PL4
+  const name = wb.SheetNames.find(n=>/PL4/i.test(n)); if (!name) return null;
+  const aoa = XLSX.utils.sheet_to_json(wb.Sheets[name], {header:1, raw:true, defval:""});
+  const hi = aoa.findIndex(r=>r.some(c=>headKey(c).startsWith("mã hồ sơ"))); if (hi<0) return null;
+  const head = aoa[hi].map(headKey), col = {};
+  Object.entries(PL4_MAP).forEach(([k,h])=>{ const j = head.findIndex(x=>x.startsWith(h)); if (j>=0) col[k]=j; });
+  const out = new Map();
+  for (let i=hi+1;i<aoa.length;i++){ const a = aoa[i], g = k => col[k]!=null ? a[col[k]] : "";
+    if (headKey(a[0])==="stt") break; const ma = one(g("ma_ho_so")); if (!ma) continue;
+    const tt = normPick(g("capa_trang_thai"), CAPA_TT.concat(["Quá hạn"]));
+    out.set(ma, {rca: norm(g("rca"))||null, capa: norm(g("capa"))||null, capa_phong_ngua: norm(g("capa_phong_ngua"))||null, capa_don_vi: one(g("capa_don_vi"))||null,
+      capa_nguoi: one(g("capa_nguoi"))||null, capa_han: isoDate(excelDate(g("capa_han"))), capa_trang_thai: tt==="Quá hạn" ? "Đang thực hiện" : tt,
+      capa_ngay_ht: isoDate(excelDate(g("capa_ngay_ht"))), capa_hieu_qua: norm(g("capa_hieu_qua"))||null, capa_ghi_chu: norm(g("capa_ghi_chu"))||null, _line:i+1}); }
+  return {name, map:out};
+}
 function excelDate(v){ // Date | số serial | "dd/mm/yyyy [hh:mm]" | "yyyy-mm-dd"
   if (v instanceof Date && !isNaN(v)) return new Date(Math.round(v.getTime()/60000)*60000);   // SheetJS có thể lệch vài giây
   if (typeof v === "number" && v > 20000 && v < 80000) { const d = new Date(Math.round((v-25569)*86400000)); return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes()); }
@@ -995,13 +1073,13 @@ function parseKy(v){ const d = excelDate(v); if (d) return {iso:d.toISOString(),
   const m2 = one(v).match(/^(\d{1,2})[\/\-.](\d{4})$/); if (m2) return {iso:null, nam:+m2[2], thang:+m2[1]};
   return null; }
 async function readSheet(file){
-  const wb = XLSX.read(await file.arrayBuffer(), {cellDates:true});
+  const wb = XLSX.read(await file.arrayBuffer());   // ngày giữ dạng số Excel, tự đổi chính xác (tránh lệch giây do múi giờ)
   let name = wb.SheetNames.find(n=>/PL1/i.test(n));
   const find = n => { const aoa = XLSX.utils.sheet_to_json(wb.Sheets[n], {header:1, raw:true, defval:""});
     const hi = aoa.findIndex(r=>r.some(c=>headKey(c).startsWith("mã hồ sơ"))); return hi>=0 ? {aoa, hi} : null; };
   let got = name ? find(name) : null;
   if (!got){ for (const n of wb.SheetNames){ got = find(n); if (got){ name = n; break; } } }
-  return got ? {...got, name} : null;
+  return got ? {...got, name, pl4: readPL4(wb)} : null;
 }
 let IMP = null;
 $("btnImport").onclick = ()=>$("fileImport").click();
@@ -1031,21 +1109,33 @@ $("fileImport").onchange = async e=>{
         cap_do_rui_ro: normRisk(g("cap_do_rui_ro")), don_vi: one(g("don_vi"))||null, nguoi_xu_ly: one(g("nguoi_xu_ly"))||null,
         sla: one(g("sla"))||null, tinh_trang: normPick(g("tinh_trang"), TINH_TRANG) || "Mới tiếp nhận",
         ngay_hoan_tat: ht ? ht.toISOString() : null, muc_do_hai_long: normPick(g("muc_do_hai_long"), HAI_LONG),
-        rca: norm(g("rca"))||null, capa: norm(g("capa"))||null, ghi_chu: norm(g("ghi_chu"))||null };
+        rca: norm(g("rca"))||null, ...splitCapa(g("capa")), ghi_chu: norm(g("ghi_chu"))||null };
       if (!o.nhom && o.chi_tiet_nhom){ const gg = groupCode(o.chi_tiet_nhom); const full = PL7_GROUPS.find(x=>x.startsWith(gg)); if (full) o.nhom = one(full); }
       if (ky.noYear) errors.push({line, ma, loi:`Ngày tiếp nhận không ghi năm, tạm hiểu là năm ${ky.nam}`, warn:true});
       if (ma){ if (seen.has(ma)){ errors.push({line, ma, loi:`Trùng mã với dòng ${seen.get(ma)} trong cùng file, bỏ qua`}); continue; } seen.set(ma, line); }
       o._line = line; rows.push(o);
     }
     const byMa = new Map(DATA.map(r=>[r.ma_ho_so, r]));
+    let pl4n = 0;
+    if (got.pl4){ // ghép dữ liệu PL4 vào hồ sơ cùng mã
+      const inFile = new Map(rows.filter(o=>o.ma_ho_so).map(o=>[o.ma_ho_so, o]));
+      got.pl4.map.forEach((v, ma)=>{ const {_line, ...cap} = v; pl4n++;
+        const keep = Object.fromEntries(Object.entries(cap).filter(([k,x])=>x!=null || k.startsWith("capa_")));
+        if (inFile.has(ma)) { const o = inFile.get(ma); Object.entries(keep).forEach(([k,x])=>{ if (x!=null || o[k]==null || k.startsWith("capa_")) o[k] = x ?? o[k] ?? null; }); }
+        else if (byMa.has(ma)) { const old = byMa.get(ma); const o = {}; CMP.forEach(k=>o[k]=old[k]); o.ma_ho_so = ma; Object.assign(o, keep); o._line = "PL4-"+_line; rows.push(o); }
+        else errors.push({line:"PL4-"+_line, ma, loi:"Mã hồ sơ trong PL4 không có trong PL1 và chưa có trên hệ thống, bỏ qua"});
+      });
+    }
     const news = [], dups = [];
     rows.forEach(o=>{ const old = o.ma_ho_so && byMa.get(o.ma_ho_so);
       if (!old) { news.push(o); return; }
       const diff = CMP.filter(k=>{ const a = old[k], b = o[k];
-        if (k==="ngay_tiep_nhan"||k==="ngay_hoan_tat") return (a?new Date(a).getTime():null) !== (b?new Date(b).getTime():null);
+        if (k==="ngay_tiep_nhan"||k==="ngay_hoan_tat") return (!a!==!b) || (a && b && Math.abs(new Date(a)-new Date(b)) >= 60000);   // lệch dưới 1 phút (giây lẻ) coi như giống
+        if (k==="capa_han"||k==="capa_ngay_ht") return String(a||"").slice(0,10) !== String(b||"").slice(0,10);
+        if (k.startsWith("capa_") && !(k in o)) return false;
         return one(a) !== one(b); });
       dups.push({o, old, diff}); });
-    IMP = {file:f.name, sheet:name, news, dups, errors};
+    IMP = {file:f.name, sheet:name + (got.pl4 ? ` và tab ${got.pl4.name} (${pl4n} dòng CAPA)` : ""), news, dups, errors};
     renderImport();
     $("dlgImp").showModal();
   }catch(err){ console.error(err); toast("Không đọc được file: "+(err.message||err)); }
@@ -1067,7 +1157,7 @@ function renderImport(){
       <div style="display:flex;gap:8px;margin-bottom:8px"><button type="button" class="btn ghost sm" id="dupAll">Chọn tất cả</button><button type="button" class="btn ghost sm" id="dupNone">Bỏ chọn tất cả</button></div>
       <div class="tbl-wrap"><table class="dup-tbl" style="min-width:760px"><thead><tr><th style="width:70px">Ghi đè</th><th>Mã hồ sơ</th><th>Thay đổi (hệ thống → file)</th></tr></thead><tbody>` +
       changed.map((d,i)=>`<tr><td><input type="checkbox" class="dupck" data-i="${dups.indexOf(d)}" aria-label="Ghi đè ${esc(d.o.ma_ho_so)}"></td><td><b>${esc(d.o.ma_ho_so)}</b><div class="muted">Dòng ${d.o._line}</div></td><td class="diff">${d.diff.slice(0,6).map(k=>{
-        const f = v => k.startsWith("ngay_") ? fmtDT(v) : one(v); const a=f(d.old[k]), b=f(d.o[k]);
+        const f = v => k.startsWith("ngay_") ? fmtDT(v) : (k==="capa_han"||k==="capa_ngay_ht") ? fmtD(v) : one(v); const a=f(d.old[k]), b=f(d.o[k]);
         return `<div><b>${LABEL[k]}:</b> ${esc(a.slice(0,60))||"<i>trống</i>"} → ${esc(b.slice(0,60))||"<i>trống</i>"}</div>`; }).join("")}${d.diff.length>6?`<div>… và ${d.diff.length-6} cột khác</div>`:""}</td></tr>`).join("") + `</tbody></table></div>`;
   }
   if (errs.length || warns.length){
@@ -1110,7 +1200,7 @@ $("btnExport").onclick = ()=>{
 function expRows(){ const f = ymFromInput($("eFrom").value), t = ymFromInput($("eTo").value);
   return DATA.filter(r=>(!f||r._ym>=f)&&(!t||r._ym<=t)).sort((a,b)=>a._ym-b._ym || String(a.ma_ho_so).localeCompare(String(b.ma_ho_so))); }
 function expInfo(){ const f=$("eFrom").value, t=$("eTo").value;
-  $("eInfo").textContent = (f&&t&&f>t) ? "Tháng bắt đầu đang sau tháng kết thúc." : `Sẽ xuất ${expRows().length} hồ sơ.`; }
+  const r = expRows(); $("eInfo").textContent = (f&&t&&f>t) ? "Tháng bắt đầu đang sau tháng kết thúc." : `Sẽ xuất ${r.length} hồ sơ vào PL1, trong đó ${r.filter(x=>x.rca||hasCapa(x)||x.capa_trang_thai).length} hồ sơ có RCA/CAPA vào PL4.`; }
 $("eFrom").onchange = expInfo; $("eTo").onchange = expInfo;
 $("expGo").onclick = async ()=>{
   const f=$("eFrom").value, t=$("eTo").value; if (f&&t&&f>t){ toast("Tháng bắt đầu đang sau tháng kết thúc."); return; }
@@ -1141,7 +1231,8 @@ async function writePL1(rows, pii, fname){
     rows.forEach((r,i)=>{
       const row = ws.addRow([i+1, r.ma_ho_so, r.ngay_tiep_nhan ? dt(r.ngay_tiep_nhan) : `Tháng ${r.thang}/${r.nam}`, r.co_so, r.kenh,
         pii ? r.ho_ten_kh : "", pii ? r.sdt : "", r.noi_dung, r.nhom, r.chi_tiet_nhom, r.cap_do_rui_ro, r.don_vi, r.nguoi_xu_ly, r.sla,
-        r.tinh_trang, r.ngay_hoan_tat ? dt(r.ngay_hoan_tat) : null, r.muc_do_hai_long, r.rca, r.capa, r.ghi_chu]);
+        r.tinh_trang, r.ngay_hoan_tat ? dt(r.ngay_hoan_tat) : null, r.muc_do_hai_long, r.rca,
+        r.capa_phong_ngua ? (r.capa ? `Khắc phục: ${r.capa}\nPhòng ngừa: ${r.capa_phong_ngua}` : `Phòng ngừa: ${r.capa_phong_ngua}`) : r.capa, r.ghi_chu]);
       row.eachCell({includeEmpty:true}, (c,ci)=>{ c.border = border; c.alignment = {vertical:"top", wrapText:true, horizontal: ci===1?"center":"left"}; });
       if (r.ngay_tiep_nhan) row.getCell(3).numFmt = "dd/mm/yyyy hh:mm";
       if (r.ngay_hoan_tat) row.getCell(16).numFmt = "dd/mm/yyyy hh:mm";
@@ -1153,10 +1244,35 @@ async function writePL1(rows, pii, fname){
     dv("I", `'Danh mục'!$A$1:$A$${PL7_GROUPS.length}`); dv("J", `'Danh mục'!$B$1:$B$${PL7_DETAILS.length}`);
     ws.autoFilter = {from:{row:2,column:1}, to:{row:2,column:20}};
     ws.pageSetup = {orientation:"landscape", fitToPage:true, fitToWidth:1, fitToHeight:0, paperSize:9};
+    // ----- PL4. Kế hoạch CAPA: chỉ hồ sơ có RCA hoặc CAPA -----
+    const caps = rows.filter(r=>r.rca || hasCapa(r) || r.capa_trang_thai);
+    const w4 = wb.addWorksheet("5. PL4.CAPA", {views:[{state:"frozen", ySplit:2, xSplit:2}]});
+    w4.columns = [6,19,12,40,32,34,34,20,18,13,15,13,32,26].map(w=>({width:w}));
+    w4.mergeCells(1,1,1,14); const t4 = w4.getCell(1,1); t4.value = "PL4. KẾ HOẠCH CAPA (HÀNH ĐỘNG KHẮC PHỤC & PHÒNG NGỪA)";
+    t4.font = {bold:true, size:14, color:{argb:"FF006B34"}}; t4.alignment = {horizontal:"center", vertical:"middle"}; w4.getRow(1).height = 30;
+    const h4 = w4.getRow(2); h4.values = PL4_HEAD; h4.height = 44;
+    h4.eachCell(c=>{ c.font = {bold:true, color:{argb:"FFFFFFFF"}}; c.fill = {type:"pattern", pattern:"solid", fgColor:{argb:"FF009247"}};
+      c.alignment = {horizontal:"center", vertical:"middle", wrapText:true}; c.border = {top:{style:"thin"},left:{style:"thin"},bottom:{style:"thin"},right:{style:"thin"}}; });
+    const d0 = v => { const m = v && String(v).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(Date.UTC(+m[1], +m[2]-1, +m[3])) : null; };
+    caps.forEach((r,i)=>{
+      const st = capaStatus(r);
+      const row = w4.addRow([i+1, r.ma_ho_so, r.co_so, r.noi_dung, r.rca, r.capa, r.capa_phong_ngua, r.capa_don_vi || r.don_vi, r.capa_nguoi,
+        d0(r.capa_han), st, d0(r.capa_ngay_ht), r.capa_hieu_qua, r.capa_ghi_chu]);
+      row.eachCell({includeEmpty:true}, (c,ci)=>{ c.border = border; c.alignment = {vertical:"top", wrapText:true, horizontal: ci===1?"center":"left"}; });
+      [10,12].forEach(ci=>row.getCell(ci).numFmt = "dd/mm/yyyy");
+      if (st==="Quá hạn") row.getCell(11).font = {bold:true, color:{argb:"FFC63B2F"}};
+    });
+    const last4 = Math.max(caps.length+2, 102);
+    for (let i=3;i<=last4;i++) w4.getCell(`K${i}`).dataValidation = {type:"list", allowBlank:true, formulae:[`"${CAPA_TT.concat(["Quá hạn"]).join(",")}"`]};
+    w4.autoFilter = {from:{row:2,column:1}, to:{row:2,column:14}};
+    w4.pageSetup = {orientation:"landscape", fitToPage:true, fitToWidth:1, fitToHeight:0, paperSize:9};
+    const nr = w4.lastRow.number + 2;
+    w4.getCell(nr,1).value = "Phân loại nguyên nhân gốc: " + PCODES.join("; ") + ". Trạng thái \"Quá hạn\" do hệ thống tự xác định khi quá thời hạn mà chưa Hoàn thành.";
+    w4.mergeCells(nr,1,nr,14); w4.getCell(nr,1).font = {italic:true, size:9, color:{argb:"FF58695F"}}; w4.getCell(nr,1).alignment = {wrapText:true}; w4.getRow(nr).height = 28;
     const buf = await wb.xlsx.writeBuffer();
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
     a.download = fname; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-    toast(rows.length ? `Đã xuất ${rows.length} hồ sơ.` : "Đã tải file mẫu PL1.");
+    toast(rows.length ? `Đã xuất ${rows.length} hồ sơ vào PL1, ${caps.length} hồ sơ có RCA/CAPA vào PL4.` : "Đã tải file mẫu PL1 và PL4.");
   }catch(err){ console.error(err); toast("Không tạo được file: "+(err.message||err)); }
   finally{ busy(false); }
 }
@@ -1165,10 +1281,12 @@ async function writePL1(rows, pii, fname){
 // ======================================================================
 function roleFromText(v){ const s = one(v).toLowerCase(); if (!s) return null;
   if (/admin|quản trị/.test(s)) return "admin"; if (/nhập|editor|sửa/.test(s)) return "editor"; if (/xem|viewer/.test(s)) return "viewer"; return null; }
-function oneAcc(username){ if (!ONE_USERS) return '<span class="muted">Không kiểm tra được</span>';
+function oneAcc(username, me){ if (!ONE_USERS) return '<span class="muted">Không kiểm tra được</span>';
   const u = ONE_USERS.get(String(username).toLowerCase());
-  if (!u) return '<span class="st open">Chưa có tài khoản</span>';
-  return u.active===false ? '<span class="st">Đã khóa bên ONE MSG</span>' : '<span class="st done">Có</span>'; }
+  if (!u) return `<span class="st open">Chưa có tài khoản</span><div style="margin-top:4px"><button class="btn ghost sm" data-acreate="${esc(username)}">Tạo tài khoản</button></div>`;
+  const st = u.active===false ? '<span class="st">Đã khóa đăng nhập</span>' : u.mustChange ? '<span class="st open">Chờ đổi mật khẩu</span>' : '<span class="st done">Đang hoạt động</span>';
+  return `${st}<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap"><button class="btn ghost sm" data-apw="${esc(u.id)}" ${me?"disabled":""}>Cấp MK tạm</button>`
+    + (me ? "" : `<button class="btn ghost sm" data-alock="${esc(u.id)}" data-on="${u.active===false?"0":"1"}">${u.active===false?"Mở khóa TK":"Khóa TK"}</button>`) + `</div>`; }
 function renderUsers(){
   const q = one($("uQ").value).toLowerCase(), rf = $("uR").value;
   const rows = USERS.filter(u=>(!rf||u.role===rf) && (!q || [u.username,u.ho_ten,u.chuc_danh,u.khoa_phong].join(" ").toLowerCase().includes(q)));
@@ -1176,12 +1294,13 @@ function renderUsers(){
     return `<tr><td><b>${esc(u.username)}</b></td><td>${esc(u.ho_ten)}${me?' <span class="muted">(bạn)</span>':""}</td><td>${esc(u.chuc_danh)}</td><td>${esc(u.khoa_phong)}</td>
     <td><select data-urole="${esc(u.username)}" aria-label="Quyền của ${esc(u.username)}" ${me?"disabled":""}>${["admin","editor","viewer"].map(r=>`<option value="${r}" ${u.role===r?"selected":""}>${ROLE_VN[r]}</option>`).join("")}</select></td>
     <td><label style="display:flex;gap:6px;align-items:center;font-size:13.5px"><input type="checkbox" data-uact="${esc(u.username)}" ${u.active?"checked":""} ${me?"disabled":""}> ${u.active?"Được dùng":"Tạm khóa"}</label></td>
-    <td>${oneAcc(u.username)}</td>
+    <td>${oneAcc(u.username, me)}</td>
     <td style="white-space:nowrap"><button class="btn ghost sm" data-uedit="${esc(u.username)}">Sửa</button> <button class="btn danger sm" data-udel="${esc(u.username)}" ${me?"disabled":""}>Bỏ quyền</button></td></tr>`; }).join("")
-    : `<tr><td colspan="8" class="empty">${USERS.length ? "Không có người dùng phù hợp." : "Chưa cấp quyền cho ai. Admin ONE MSG luôn có quyền Admin của tool."}</td></tr>`;
+    : `<tr><td colspan="8" class="empty">${USERS.length ? "Không có người dùng phù hợp." : "Chưa cấp quyền cho ai. Quản trị viên hệ thống luôn có quyền Admin của tool."}</td></tr>`;
   const c = r => USERS.filter(u=>u.role===r && u.active).length;
-  $("uInfo").textContent = `${USERS.length} người được cấp quyền: ${c("admin")} Admin, ${c("editor")} Nhập liệu, ${c("viewer")} Chỉ xem đang được dùng. Admin ONE MSG tự động có quyền Admin dù không có trong danh sách.`
-    + (ONE_USERS ? "" : " (Cột Tài khoản ONE MSG chỉ kiểm tra được khi bạn là Admin ONE MSG.)");
+  $("uInfo").textContent = `${USERS.length} người được cấp quyền: ${c("admin")} Admin, ${c("editor")} Nhập liệu, ${c("viewer")} Chỉ xem đang được dùng. Quản trị viên hệ thống tự động có quyền Admin dù không có trong danh sách.`
+    + (ONE_USERS ? "" : " (Cột Tài khoản đăng nhập chỉ dùng được khi bạn là quản trị viên hệ thống.)");
+  renderReqs();
 }
 async function saveRoles(rows){
   const r = await call("phkh_roles_upsert", {p_rows:rows});
@@ -1198,7 +1317,7 @@ $("uBody").addEventListener("click", async e=>{
   const ed = e.target.closest("[data-uedit]"), del = e.target.closest("[data-udel]");
   if (ed) openUser(USERS.find(u=>u.username===ed.dataset.uedit));
   if (del){ const u = USERS.find(x=>x.username===del.dataset.udel);
-    if (!confirm(`Bỏ quyền dùng tool của ${u.username} – ${u.ho_ten||""}?\nTài khoản ONE MSG của người này vẫn giữ nguyên.`)) return;
+    if (!confirm(`Bỏ quyền dùng tool của ${u.username} – ${u.ho_ten||""}?\nTài khoản đăng nhập của người này vẫn giữ nguyên.`)) return;
     try { await call("phkh_roles_delete", {p_username:u.username}); USERS = USERS.filter(x=>x!==u); renderUsers(); toast("Đã bỏ quyền."); } catch(err){ toast(err.message); } }
 });
 let editingUser = null;
@@ -1207,12 +1326,12 @@ function openUser(u){
   $("uTitle").textContent = u ? `Sửa quyền ${u.username}` : "Cấp quyền cho 1 người";
   $("u_ma").value = u?.username||""; $("u_ma").readOnly = !!u; $("u_ten").value = u?.ho_ten||""; $("u_cd").value = u?.chuc_danh||""; $("u_kp").value = u?.khoa_phong||"";
   $("u_role").value = u?.role || "viewer"; $("u_role").disabled = !!(u && u.username===ME.username);
-  $("uNote").textContent = "Nhập đúng mã nhân viên dùng để đăng nhập ONE MSG. Người chưa có tài khoản ONE MSG cần được tạo bên ONE MSG trước.";
+  $("uNote").textContent = ONE_USERS ? "Nhập mã nhân viên. Nếu người này chưa có tài khoản đăng nhập, hệ thống sẽ tạo tài khoản với mật khẩu mặc định." : "Nhập đúng mã nhân viên dùng để đăng nhập.";
   $("dlgUser").showModal();
 }
 $("u_ma").addEventListener("change", ()=>{ if (!ONE_USERS) return; const u = ONE_USERS.get(one($("u_ma").value).toLowerCase());
-  if (u){ if (!$("u_ten").value) $("u_ten").value = u.fullName||""; if (!$("u_kp").value) $("u_kp").value = u.dept||u.unit||""; $("uNote").textContent = "Đã tìm thấy tài khoản ONE MSG: "+(u.fullName||""); }
-  else $("uNote").textContent = "Không tìm thấy mã này trong ONE MSG. Vẫn lưu được, nhưng người này chỉ đăng nhập được khi có tài khoản ONE MSG."; });
+  if (u){ if (!$("u_ten").value) $("u_ten").value = u.fullName||""; if (!$("u_kp").value) $("u_kp").value = u.dept||u.unit||""; $("uNote").textContent = "Đã có tài khoản đăng nhập: "+(u.fullName||""); }
+  else $("uNote").textContent = `Mã này chưa có tài khoản đăng nhập. Khi lưu, hệ thống sẽ tạo tài khoản với mật khẩu mặc định${ONE_SET.defaultPassword?` (${ONE_SET.defaultPassword})`:""}, người dùng phải đổi mật khẩu ở lần đăng nhập đầu.`; });
 $("btnUAdd").onclick = ()=>openUser(null);
 $("fUser").onsubmit = async e=>{
   e.preventDefault();
@@ -1220,7 +1339,10 @@ $("fUser").onsubmit = async e=>{
     role: $("u_role").value, active: editingUser ? editingUser.active : true};
   if (!row.username || !row.ho_ten){ toast("Vui lòng nhập mã NV và họ tên."); return; }
   if (!editingUser && USERS.some(u=>u.username===row.username)){ toast("Mã NV này đã được cấp quyền, bấm Sửa ở danh sách."); return; }
-  try { const r = await saveRoles([row]); if (r.loi.length){ toast(r.loi[0].loi); return; } $("dlgUser").close(); toast(`Đã lưu quyền cho ${row.username}.`); }
+  try { const r = await saveRoles([row]); if (r.loi.length){ toast(r.loi[0].loi); return; }
+    let extra = "";
+    if (!editingUser && ONE_USERS && !ONE_USERS.has(row.username)){ const c = await createAccounts([row]); extra = c.created ? ` Đã tạo tài khoản đăng nhập${ONE_SET.defaultPassword?`, mật khẩu mặc định: ${ONE_SET.defaultPassword}`:" với mật khẩu mặc định"}.` : ""; }
+    $("dlgUser").close(); renderUsers(); toast(`Đã lưu quyền cho ${row.username}.${extra}`, extra?9000:4500); }
   catch(err){ toast("Không lưu được: "+err.message); }
 };
 // ----- Cấp quyền hàng loạt -----
@@ -1233,7 +1355,7 @@ $("btnUTemplate").onclick = async ()=>{
   ws.getRow(1).eachCell(c=>{ c.font={bold:true,color:{argb:"FFFFFFFF"}}; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF009247"}}; });
   ws.addRow(["12345","Nguyễn Văn A","Điều dưỡng","Khoa Khám bệnh","Nhập liệu"]); ws.addRow(["23456","Trần Thị B","Trưởng khoa","Khoa Nội","Chỉ xem"]);
   for (let i=2;i<=500;i++) ws.getCell(`E${i}`).dataValidation = {type:"list", allowBlank:true, formulae:['"Admin,Nhập liệu,Chỉ xem"']};
-  ws.addRow([]); ws.addRow(["Ghi chú: Mã NV phải trùng mã đăng nhập ONE MSG. Quyền để trống sẽ lấy quyền mặc định chọn khi import. Có thể dùng thẳng file Bảng tổng hợp chấm công (Mã NV, Họ và Tên, Chức danh, Phòng ban)."]);
+  ws.addRow([]); ws.addRow(["Ghi chú: Mã NV là mã đăng nhập. Quyền để trống sẽ lấy quyền mặc định chọn khi import. Có thể dùng thẳng file Bảng tổng hợp chấm công (Mã NV, Họ và Tên, Chức danh, Phòng ban)."]);
   const buf = await wb.xlsx.writeBuffer(); const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([buf])); a.download="Mau_phan_quyen_tool_phan_nan.xlsx"; a.click();
 };
 $("fileUsers").onchange = async e=>{
@@ -1265,10 +1387,10 @@ $("fileUsers").onchange = async e=>{
 function renderUImp(){
   const {rows, errs, file} = UIMP, n = rows.filter(r=>!r._exists).length, noOne = rows.filter(r=>r._one===false).length;
   $("uiBody").innerHTML = `<p style="margin-top:0">File <b>${esc(file)}</b>: ${rows.length} người, ${n} người mới được cấp quyền, ${rows.length-n} người đã có quyền (sẽ cập nhật).</p>
-    ${noOne?`<div class="warnbox"><b>${noOne} mã NV chưa có tài khoản ONE MSG.</b> Vẫn cấp quyền được, nhưng họ chỉ đăng nhập được sau khi được tạo tài khoản bên ONE MSG.</div>`:""}
+    ${noOne?`<label class="warnbox" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="uiCreate" checked style="margin-top:3px"><span><b>${noOne} mã NV chưa có tài khoản đăng nhập.</b> Tạo tài khoản cho họ với mật khẩu mặc định${ONE_SET.defaultPassword?` (${esc(ONE_SET.defaultPassword)})`:""}; họ phải đổi mật khẩu ở lần đăng nhập đầu.</span></label>`:""}
     <label class="f" style="max-width:320px;margin-bottom:12px">Quyền mặc định cho dòng không ghi quyền<select id="uiRole"><option value="viewer">Chỉ xem</option><option value="editor">Nhập liệu</option><option value="admin">Admin</option></select></label>
     ${errs.length?`<div class="warnbox">${errs.slice(0,20).map(esc).join("<br>")}</div>`:""}
-    <div class="tbl-wrap"><table style="min-width:680px"><thead><tr><th>Mã NV</th><th>Họ và tên</th><th>Chức danh</th><th>Khoa/Phòng</th><th>Quyền</th><th>Trong tool</th><th>ONE MSG</th></tr></thead><tbody>
+    <div class="tbl-wrap"><table style="min-width:680px"><thead><tr><th>Mã NV</th><th>Họ và tên</th><th>Chức danh</th><th>Khoa/Phòng</th><th>Quyền</th><th>Trong tool</th><th>Tài khoản</th></tr></thead><tbody>
     ${rows.slice(0,300).map(r=>`<tr><td>${esc(r.username)}</td><td>${esc(r.ho_ten)}</td><td>${esc(r.chuc_danh)}</td><td>${esc(r.khoa_phong)}</td><td>${r.role?ROLE_VN[r.role]:'<span class="muted">Mặc định</span>'}</td><td>${r._exists?'<span class="st">Đã có</span>':'<span class="st done">Mới</span>'}</td><td>${r._one===null?'<span class="muted">–</span>':r._one?'<span class="st done">Có</span>':'<span class="st open">Chưa có</span>'}</td></tr>`).join("")}
     </tbody></table></div>${rows.length>300?`<p class="meta">Đang hiển thị 300/${rows.length} dòng.</p>`:""}`;
 }
@@ -1281,10 +1403,62 @@ $("uiGo").onclick = async ()=>{
   try{
     let ok = 0, errs = [];
     for (let i=0;i<rows.length;i+=300){ const r = await call("phkh_roles_upsert", {p_rows:rows.slice(i,i+300)}); ok += r.ok; errs.push(...r.loi.map(x=>`${x.username}: ${x.loi}`)); }
+    let made = "";
+    if ($("uiCreate") && $("uiCreate").checked){ const miss = UIMP.rows.filter(r=>r._one===false); const c = await createAccounts(miss); made = ` Đã tạo ${c.created} tài khoản đăng nhập mới.`; }
     USERS = await call("phkh_roles_list"); renderUsers(); fillDatalists(); $("dlgUImp").close();
-    toast(`Đã cấp/cập nhật quyền cho ${ok} người.` + (errs.length?` ${errs.length} lỗi: ${errs.slice(0,3).join("; ")}`:""), 8000);
+    toast(`Đã cấp/cập nhật quyền cho ${ok} người.${made}` + (errs.length?` ${errs.length} lỗi: ${errs.slice(0,3).join("; ")}`:""), 9000);
   }catch(err){ toast("Không thực hiện được: "+err.message); }
   finally{ busy(false); $("uiGo").disabled = false; }
+};
+
+// ----- Tài khoản đăng nhập: tạo, cấp mật khẩu tạm, khóa/mở khóa, yêu cầu quên mật khẩu -----
+async function createAccounts(rows){ // chỉ tạo cho mã chưa có tài khoản
+  const list = rows.filter(r=>ONE_USERS && !ONE_USERS.has(String(r.username).toLowerCase()))
+    .map(r=>({code:r.username, name:r.ho_ten||r.username, title:"", dept:r.khoa_phong||"", unit:"", left:false}));
+  const tot = {created:0};
+  for (let i=0;i<list.length;i+=100){ const r = await call("onemsg_admin_import", {p_rows:list.slice(i,i+100)}); tot.created += (r && r.created) || 0; }
+  await loadOneUsers(); return tot;
+}
+function renderReqs(){
+  const box = $("reqBody");
+  if (!ONE_USERS){ box.innerHTML = '<p class="meta">Chỉ quản trị viên hệ thống mới xem và xử lý được yêu cầu cấp lại mật khẩu.</p>'; $("reqCount").hidden = true; updateReqBadge(); return; }
+  $("reqCount").hidden = !ONE_REQ.length; $("reqCount").textContent = ONE_REQ.length + " đang chờ";
+  box.innerHTML = ONE_REQ.length ? `<div class="tbl-wrap"><table style="min-width:640px"><thead><tr><th>Mã NV</th><th>Họ tên</th><th>Khoa/Phòng</th><th>Yêu cầu lúc</th><th></th></tr></thead><tbody>${
+    ONE_REQ.map(q=>`<tr><td><b>${esc(q.username)}</b></td><td>${esc(q.fullName)}</td><td>${esc(q.dept||"")}</td><td>${esc(fmtDT(q.at))}</td>
+      <td style="white-space:nowrap"><button class="btn sm" data-rgrant="${esc(q.userId)}">Cấp mật khẩu tạm</button> <button class="btn ghost sm" data-rdis="${esc(q.id)}">Bỏ qua</button></td></tr>`).join("")}</tbody></table></div>`
+    : '<p class="meta" style="margin:0">Không có yêu cầu nào đang chờ. Có thể chủ động cấp bằng nút "Cấp MK tạm" ở danh sách bên dưới.</p>';
+  updateReqBadge();
+}
+function updateReqBadge(){ const b = $("tabUsersBtn"); if (b) b.textContent = "Người dùng" + (ONE_USERS && ONE_REQ.length ? ` (${ONE_REQ.length})` : ""); }
+async function grantTemp(oneId){
+  try{
+    const r = await call("onemsg_admin_reset_password", {p_user:oneId});
+    if (!r || !r.ok){ toast((r && r.error) || "Không cấp được mật khẩu tạm."); return; }
+    await loadOneUsers(); renderUsers();
+    $("tmpWho").innerHTML = `Mật khẩu tạm của <b>${esc(r.fullName||"")}</b> (mã <b>${esc(r.username||"")}</b>):`;
+    $("tmpPw").value = r.password || ""; $("tmpLocked").hidden = r.active !== false; $("dlgTmp").showModal();
+  }catch(err){ toast("Không cấp được mật khẩu tạm: "+err.message); }
+}
+$("tmpCopy").onclick = async ()=>{ const i = $("tmpPw"); i.select(); try { await navigator.clipboard.writeText(i.value); toast("Đã sao chép."); } catch(e){ document.execCommand("copy"); } };
+document.addEventListener("click", async e=>{
+  const g = e.target.closest("[data-rgrant]"); if (g){ await grantTemp(g.dataset.rgrant); return; }
+  const d = e.target.closest("[data-rdis]"); if (d){ try { await call("onemsg_admin_dismiss_request", {p_id:d.dataset.rdis}); await loadOneUsers(); renderUsers(); toast("Đã bỏ qua yêu cầu."); } catch(err){ toast(err.message); } return; }
+  const p = e.target.closest("[data-apw]"); if (p){ const u = [...ONE_USERS.values()].find(x=>String(x.id)===p.dataset.apw);
+    if (!confirm(`Cấp mật khẩu tạm mới cho ${u.fullName||""} (${u.username})?\nMật khẩu hiện tại sẽ không dùng được nữa.`)) return; await grantTemp(u.id); return; }
+  const l = e.target.closest("[data-alock]"); if (l){ const u = [...ONE_USERS.values()].find(x=>String(x.id)===l.dataset.alock), lock = l.dataset.on==="1";
+    if (lock && !confirm(`Khóa tài khoản đăng nhập của ${u.fullName||""} (${u.username})? Người này sẽ không đăng nhập được nữa.`)) return;
+    try { await call("onemsg_admin_bulk", {p_ids:[u.id], p_action: lock ? "lock" : "unlock"}); await loadOneUsers(); renderUsers(); toast(lock ? "Đã khóa tài khoản." : "Đã mở khóa tài khoản."); } catch(err){ toast(err.message); } return; }
+  const c = e.target.closest("[data-acreate]"); if (c){ const u = USERS.find(x=>x.username===c.dataset.acreate);
+    try { const r = await createAccounts([u]); renderUsers(); toast(r.created ? `Đã tạo tài khoản ${u.username}${ONE_SET.defaultPassword?`, mật khẩu mặc định: ${ONE_SET.defaultPassword}`:" với mật khẩu mặc định"}.` : "Chưa tạo được tài khoản.", 9000); } catch(err){ toast(err.message); } }
+});
+// Quên mật khẩu (màn hình đăng nhập)
+$("btnForgot").onclick = ()=>{ $("fgUser").value = $("lgUser").value; $("fgErr").textContent = ""; $("dlgForgot").showModal(); $("fgUser").focus(); };
+$("fForgot").onsubmit = async e=>{
+  e.preventDefault(); const code = one($("fgUser").value); if (!code){ $("fgErr").textContent = "Vui lòng nhập mã nhân viên."; return; }
+  $("fgBtn").disabled = true;
+  try { await rpc("onemsg_request_reset", {p_username:code}); $("dlgForgot").close(); toast("Đã gửi yêu cầu. Quản trị viên sẽ liên hệ để cấp mật khẩu mới.", 7000); }
+  catch(err){ $("fgErr").textContent = err.message==="NETWORK" ? "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại." : "Chưa gửi được yêu cầu. Hãy liên hệ trực tiếp quản trị viên."; }
+  finally { $("fgBtn").disabled = false; }
 };
 
 // ======================================================================
