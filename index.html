@@ -173,9 +173,9 @@ tr.sel td{background:var(--mint)}
   <div class="auth-card">
     <div class="mark">MSG</div>
     <h2>Quản lý phàn nàn khách hàng</h2>
-    <p>Bệnh viện Đa khoa Sài Gòn Tam Kỳ. Đăng nhập bằng mã nhân viên và mật khẩu.</p>
+    <p>Bệnh viện Đa khoa Sài Gòn Tam Kỳ. Đăng nhập bằng email công ty và mật khẩu.</p>
     <form id="fLogin">
-      <label class="f">Mã nhân viên<input type="text" id="lgUser" autocomplete="username" required></label>
+      <label class="f">Email công ty<input type="text" id="lgUser" inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
       <label class="f">Mật khẩu<input type="password" id="lgPw" autocomplete="current-password" required></label>
       <div class="err" id="lgErr" role="alert"></div>
       <button class="btn" type="submit" id="lgBtn">Đăng nhập</button>
@@ -362,7 +362,7 @@ tr.sel td{background:var(--mint)}
     <label style="flex:1;min-width:220px">Tìm kiếm<input type="search" id="uQ" placeholder="Mã NV, họ tên, khoa phòng…"></label>
     <label>Quyền<select id="uR"><option value="">Tất cả</option><option value="admin">Admin</option><option value="editor">Nhập liệu</option><option value="viewer">Chỉ xem</option></select></label>
   </div>
-  <div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>Mã NV</th><th>Họ và tên</th><th>Chức danh</th><th>Khoa/Phòng</th><th>Quyền trong tool</th><th>Được dùng tool</th><th>Tài khoản đăng nhập</th><th></th></tr></thead><tbody id="uBody"></tbody></table></div>
+  <div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>Mã NV</th><th>Họ và tên / Email đăng nhập</th><th>Chức danh</th><th>Khoa/Phòng</th><th>Quyền trong tool</th><th>Được dùng tool</th><th>Tài khoản đăng nhập</th><th></th></tr></thead><tbody id="uBody"></tbody></table></div>
   <p class="meta" id="uInfo"></p>
 </div>
 </main>
@@ -465,6 +465,7 @@ tr.sel td{background:var(--mint)}
     <label class="f"><span class="req">Mã nhân viên (mã đăng nhập)</span><input type="text" id="u_ma" required></label>
     <label class="f"><span class="req">Quyền</span><select id="u_role"><option value="viewer">Chỉ xem</option><option value="editor">Nhập liệu</option><option value="admin">Admin</option></select></label>
     <label class="f span2" style="grid-column:1/-1"><span class="req">Họ và tên</span><input type="text" id="u_ten" required></label>
+    <label class="f span2" style="grid-column:1/-1">Email công ty (dùng để đăng nhập)<input type="text" id="u_email" inputmode="email" autocapitalize="off" spellcheck="false"></label>
     <label class="f">Chức danh<input type="text" id="u_cd"></label>
     <label class="f">Khoa/Phòng<input type="text" id="u_kp"></label>
   </div><p class="meta" id="uNote"></p></div>
@@ -483,8 +484,8 @@ tr.sel td{background:var(--mint)}
 <dialog id="dlgForgot" class="narrow" aria-labelledby="fgTitle">
   <form id="fForgot" method="dialog">
   <div class="m-head"><h3 id="fgTitle">Quên mật khẩu</h3><button type="button" class="x" data-close aria-label="Đóng">×</button></div>
-  <div class="m-body"><p style="margin-top:0">Nhập mã nhân viên của bạn. Quản trị viên sẽ nhận được yêu cầu và liên hệ để cấp mật khẩu tạm.</p>
-    <label class="f">Mã nhân viên<input type="text" id="fgUser" autocomplete="username" required></label><div class="err" id="fgErr" role="alert"></div></div>
+  <div class="m-body"><p style="margin-top:0">Nhập email công ty của bạn. Quản trị viên sẽ nhận được yêu cầu và liên hệ để cấp mật khẩu tạm.</p>
+    <label class="f">Email công ty<input type="text" id="fgUser" inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false" required></label><div class="err" id="fgErr" role="alert"></div></div>
   <div class="m-foot"><div class="r"><button type="button" class="btn ghost" data-close>Hủy</button><button type="submit" class="btn" id="fgBtn">Gửi yêu cầu</button></div></div>
   </form>
 </dialog>
@@ -641,8 +642,8 @@ function enterApp(){
 $("fLogin").onsubmit = async e=>{
   e.preventDefault(); $("lgErr").textContent = ""; $("lgBtn").disabled = true;
   try{
-    const r = await rpc("onemsg_login", {p_username:one($("lgUser").value), p_password:$("lgPw").value});
-    if (!r || !r.ok){ $("lgErr").textContent = ({invalid:"Sai mã nhân viên hoặc mật khẩu.", locked:"Tài khoản tạm khóa 15 phút do nhập sai mật khẩu nhiều lần.", inactive:"Tài khoản đã bị khóa. Liên hệ quản trị viên."})[r&&r.error] || "Đăng nhập không thành công."; return; }
+    const r = await rpc("phkh_login", {p_login:one($("lgUser").value), p_password:$("lgPw").value});
+    if (!r || !r.ok){ $("lgErr").textContent = ({invalid:"Sai email hoặc mật khẩu. Nếu chưa được cấp email đăng nhập, hãy liên hệ quản trị viên.", locked:"Tài khoản tạm khóa 15 phút do nhập sai mật khẩu nhiều lần.", inactive:"Tài khoản đã bị khóa. Liên hệ quản trị viên."})[r&&r.error] || "Đăng nhập không thành công."; return; }
     $("lgPw").value = "";
     if (r.mustChange){ TOKEN = r.token; lsSet(TOKEN_KEY, TOKEN); ME = {fullName:r.fullName}; openChange(true); return; }
     await startWithToken(r.token);
@@ -1291,7 +1292,7 @@ function renderUsers(){
   const q = one($("uQ").value).toLowerCase(), rf = $("uR").value;
   const rows = USERS.filter(u=>(!rf||u.role===rf) && (!q || [u.username,u.ho_ten,u.chuc_danh,u.khoa_phong].join(" ").toLowerCase().includes(q)));
   $("uBody").innerHTML = rows.length ? rows.map(u=>{ const me = u.username===ME.username;
-    return `<tr><td><b>${esc(u.username)}</b></td><td>${esc(u.ho_ten)}${me?' <span class="muted">(bạn)</span>':""}</td><td>${esc(u.chuc_danh)}</td><td>${esc(u.khoa_phong)}</td>
+    return `<tr><td><b>${esc(u.username)}</b></td><td>${esc(u.ho_ten)}${me?' <span class="muted">(bạn)</span>':""}<div class="${u.email?"muted":""}" style="font-size:12.5px">${u.email?esc(u.email):'<span class="st open">Chưa có email</span>'}</div></td><td>${esc(u.chuc_danh)}</td><td>${esc(u.khoa_phong)}</td>
     <td><select data-urole="${esc(u.username)}" aria-label="Quyền của ${esc(u.username)}" ${me?"disabled":""}>${["admin","editor","viewer"].map(r=>`<option value="${r}" ${u.role===r?"selected":""}>${ROLE_VN[r]}</option>`).join("")}</select></td>
     <td><label style="display:flex;gap:6px;align-items:center;font-size:13.5px"><input type="checkbox" data-uact="${esc(u.username)}" ${u.active?"checked":""} ${me?"disabled":""}> ${u.active?"Được dùng":"Tạm khóa"}</label></td>
     <td>${oneAcc(u.username, me)}</td>
@@ -1299,6 +1300,7 @@ function renderUsers(){
     : `<tr><td colspan="8" class="empty">${USERS.length ? "Không có người dùng phù hợp." : "Chưa cấp quyền cho ai. Quản trị viên hệ thống luôn có quyền Admin của tool."}</td></tr>`;
   const c = r => USERS.filter(u=>u.role===r && u.active).length;
   $("uInfo").textContent = `${USERS.length} người được cấp quyền: ${c("admin")} Admin, ${c("editor")} Nhập liệu, ${c("viewer")} Chỉ xem đang được dùng. Quản trị viên hệ thống tự động có quyền Admin dù không có trong danh sách.`
+    + (USERS.some(u=>!u.email) ? ` ${USERS.filter(u=>!u.email).length} người chưa có email nên chưa đăng nhập bằng email được (vẫn đăng nhập bằng mã NV).` : "")
     + (ONE_USERS ? "" : " (Cột Tài khoản đăng nhập chỉ dùng được khi bạn là quản trị viên hệ thống.)");
   renderReqs();
 }
@@ -1324,7 +1326,7 @@ let editingUser = null;
 function openUser(u){
   editingUser = u || null;
   $("uTitle").textContent = u ? `Sửa quyền ${u.username}` : "Cấp quyền cho 1 người";
-  $("u_ma").value = u?.username||""; $("u_ma").readOnly = !!u; $("u_ten").value = u?.ho_ten||""; $("u_cd").value = u?.chuc_danh||""; $("u_kp").value = u?.khoa_phong||"";
+  $("u_ma").value = u?.username||""; $("u_ma").readOnly = !!u; $("u_ten").value = u?.ho_ten||""; $("u_cd").value = u?.chuc_danh||""; $("u_kp").value = u?.khoa_phong||""; $("u_email").value = u?.email||"";
   $("u_role").value = u?.role || "viewer"; $("u_role").disabled = !!(u && u.username===ME.username);
   $("uNote").textContent = ONE_USERS ? "Nhập mã nhân viên. Nếu người này chưa có tài khoản đăng nhập, hệ thống sẽ tạo tài khoản với mật khẩu mặc định." : "Nhập đúng mã nhân viên dùng để đăng nhập.";
   $("dlgUser").showModal();
@@ -1335,9 +1337,10 @@ $("u_ma").addEventListener("change", ()=>{ if (!ONE_USERS) return; const u = ONE
 $("btnUAdd").onclick = ()=>openUser(null);
 $("fUser").onsubmit = async e=>{
   e.preventDefault();
-  const row = {username:one($("u_ma").value).toLowerCase(), ho_ten:one($("u_ten").value), chuc_danh:one($("u_cd").value)||null, khoa_phong:one($("u_kp").value)||null,
+  const row = {username:one($("u_ma").value).toLowerCase(), ho_ten:one($("u_ten").value), chuc_danh:one($("u_cd").value)||null, khoa_phong:one($("u_kp").value)||null, email:one($("u_email").value).toLowerCase(),
     role: $("u_role").value, active: editingUser ? editingUser.active : true};
   if (!row.username || !row.ho_ten){ toast("Vui lòng nhập mã NV và họ tên."); return; }
+  if (row.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(row.email)){ toast("Email chưa đúng định dạng."); $("u_email").focus(); return; }
   if (!editingUser && USERS.some(u=>u.username===row.username)){ toast("Mã NV này đã được cấp quyền, bấm Sửa ở danh sách."); return; }
   try { const r = await saveRoles([row]); if (r.loi.length){ toast(r.loi[0].loi); return; }
     let extra = "";
@@ -1346,14 +1349,14 @@ $("fUser").onsubmit = async e=>{
   catch(err){ toast("Không lưu được: "+err.message); }
 };
 // ----- Cấp quyền hàng loạt -----
-const U_HEAD = {username:["mã nv","mã nhân viên","ma nv","mã","username"], ho_ten:["họ và tên","họ tên","ho ten","tên"], chuc_danh:["chức danh","chức vụ"], khoa_phong:["khoa/phòng","khoa phòng","phòng ban","khoa","bộ phận"], role:["quyền","vai trò","role"]};
+const U_HEAD = {email:["email","e-mail","email công ty","mail"], username:["mã nv","mã nhân viên","ma nv","mã","username"], ho_ten:["họ và tên","họ tên","ho ten","tên"], chuc_danh:["chức danh","chức vụ"], khoa_phong:["khoa/phòng","khoa phòng","phòng ban","khoa","bộ phận"], role:["quyền","vai trò","role"]};
 let UIMP = null;
 $("btnUImport").onclick = ()=>$("fileUsers").click();
 $("btnUTemplate").onclick = async ()=>{
   const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Phân quyền");
-  ws.columns = [{header:"Mã NV",width:14},{header:"Họ và tên",width:28},{header:"Chức danh",width:22},{header:"Khoa/Phòng",width:26},{header:"Quyền",width:14}];
+  ws.columns = [{header:"Mã NV",width:14},{header:"Họ và tên",width:28},{header:"Chức danh",width:22},{header:"Khoa/Phòng",width:26},{header:"Quyền",width:14},{header:"Email",width:32}];
   ws.getRow(1).eachCell(c=>{ c.font={bold:true,color:{argb:"FFFFFFFF"}}; c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF009247"}}; });
-  ws.addRow(["12345","Nguyễn Văn A","Điều dưỡng","Khoa Khám bệnh","Nhập liệu"]); ws.addRow(["23456","Trần Thị B","Trưởng khoa","Khoa Nội","Chỉ xem"]);
+  ws.addRow(["12345","Nguyễn Văn A","Điều dưỡng","Khoa Khám bệnh","Nhập liệu","nguyenvana@ten-mien-cong-ty.vn"]); ws.addRow(["23456","Trần Thị B","Trưởng khoa","Khoa Nội","Chỉ xem","tranthib@ten-mien-cong-ty.vn"]);
   for (let i=2;i<=500;i++) ws.getCell(`E${i}`).dataValidation = {type:"list", allowBlank:true, formulae:['"Admin,Nhập liệu,Chỉ xem"']};
   ws.addRow([]); ws.addRow(["Ghi chú: Mã NV là mã đăng nhập. Quyền để trống sẽ lấy quyền mặc định chọn khi import. Có thể dùng thẳng file Bảng tổng hợp chấm công (Mã NV, Họ và Tên, Chức danh, Phòng ban)."]);
   const buf = await wb.xlsx.writeBuffer(); const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([buf])); a.download="Mau_phan_quyen_tool_phan_nan.xlsx"; a.click();
@@ -1377,7 +1380,8 @@ $("fileUsers").onchange = async e=>{
       if (seen.has(ma)){ errs.push(`Dòng ${i+1}: mã ${ma} bị lặp trong file`); continue; } seen.add(ma);
       const rtxt = g("role"), role = roleFromText(rtxt);
       if (rtxt && !role) errs.push(`Dòng ${i+1}: quyền "${rtxt}" không hiểu được, sẽ dùng quyền mặc định`);
-      rows.push({username:ma, ho_ten:g("ho_ten")||null, chuc_danh:g("chuc_danh")||null, khoa_phong:g("khoa_phong")||null, role,
+      const em = g("email").toLowerCase(); if (em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) errs.push(`Dòng ${i+1}: email "${em}" không hợp lệ, sẽ bỏ qua email này`);
+      rows.push({username:ma, ho_ten:g("ho_ten")||null, chuc_danh:g("chuc_danh")||null, khoa_phong:g("khoa_phong")||null, role, email: /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em) ? em : null,
         _exists: USERS.some(u=>u.username===ma), _one: ONE_USERS ? ONE_USERS.has(ma) : null});
     }
     if (!rows.length){ toast("File không có dòng nào có Mã NV."); return; }
@@ -1390,15 +1394,15 @@ function renderUImp(){
     ${noOne?`<label class="warnbox" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="uiCreate" checked style="margin-top:3px"><span><b>${noOne} mã NV chưa có tài khoản đăng nhập.</b> Tạo tài khoản cho họ với mật khẩu mặc định${ONE_SET.defaultPassword?` (${esc(ONE_SET.defaultPassword)})`:""}; họ phải đổi mật khẩu ở lần đăng nhập đầu.</span></label>`:""}
     <label class="f" style="max-width:320px;margin-bottom:12px">Quyền mặc định cho dòng không ghi quyền<select id="uiRole"><option value="viewer">Chỉ xem</option><option value="editor">Nhập liệu</option><option value="admin">Admin</option></select></label>
     ${errs.length?`<div class="warnbox">${errs.slice(0,20).map(esc).join("<br>")}</div>`:""}
-    <div class="tbl-wrap"><table style="min-width:680px"><thead><tr><th>Mã NV</th><th>Họ và tên</th><th>Chức danh</th><th>Khoa/Phòng</th><th>Quyền</th><th>Trong tool</th><th>Tài khoản</th></tr></thead><tbody>
-    ${rows.slice(0,300).map(r=>`<tr><td>${esc(r.username)}</td><td>${esc(r.ho_ten)}</td><td>${esc(r.chuc_danh)}</td><td>${esc(r.khoa_phong)}</td><td>${r.role?ROLE_VN[r.role]:'<span class="muted">Mặc định</span>'}</td><td>${r._exists?'<span class="st">Đã có</span>':'<span class="st done">Mới</span>'}</td><td>${r._one===null?'<span class="muted">–</span>':r._one?'<span class="st done">Có</span>':'<span class="st open">Chưa có</span>'}</td></tr>`).join("")}
+    <div class="tbl-wrap"><table style="min-width:680px"><thead><tr><th>Mã NV</th><th>Họ và tên</th><th>Email</th><th>Chức danh</th><th>Khoa/Phòng</th><th>Quyền</th><th>Trong tool</th><th>Tài khoản</th></tr></thead><tbody>
+    ${rows.slice(0,300).map(r=>`<tr><td>${esc(r.username)}</td><td>${esc(r.ho_ten)}</td><td>${r.email?esc(r.email):'<span class="muted">–</span>'}</td><td>${esc(r.chuc_danh)}</td><td>${esc(r.khoa_phong)}</td><td>${r.role?ROLE_VN[r.role]:'<span class="muted">Mặc định</span>'}</td><td>${r._exists?'<span class="st">Đã có</span>':'<span class="st done">Mới</span>'}</td><td>${r._one===null?'<span class="muted">–</span>':r._one?'<span class="st done">Có</span>':'<span class="st open">Chưa có</span>'}</td></tr>`).join("")}
     </tbody></table></div>${rows.length>300?`<p class="meta">Đang hiển thị 300/${rows.length} dòng.</p>`:""}`;
 }
 $("uiGo").onclick = async ()=>{
   const def = $("uiRole").value;
   const rows = UIMP.rows.map(r=>{ const old = USERS.find(u=>u.username===r.username);
-    return {username:r.username, ho_ten:r.ho_ten, chuc_danh:r.chuc_danh, khoa_phong:r.khoa_phong, active: old ? old.active : true,
-            role: r.username===ME.username ? "admin" : (r.role || def)}; });
+    const o = {username:r.username, ho_ten:r.ho_ten, chuc_danh:r.chuc_danh, khoa_phong:r.khoa_phong, active: old ? old.active : true,
+            role: r.username===ME.username ? "admin" : (r.role || def)}; if (r.email) o.email = r.email; return o; });
   $("uiGo").disabled = true; busy(true, "Đang cấp quyền…");
   try{
     let ok = 0, errs = [];
@@ -1454,9 +1458,9 @@ document.addEventListener("click", async e=>{
 // Quên mật khẩu (màn hình đăng nhập)
 $("btnForgot").onclick = ()=>{ $("fgUser").value = $("lgUser").value; $("fgErr").textContent = ""; $("dlgForgot").showModal(); $("fgUser").focus(); };
 $("fForgot").onsubmit = async e=>{
-  e.preventDefault(); const code = one($("fgUser").value); if (!code){ $("fgErr").textContent = "Vui lòng nhập mã nhân viên."; return; }
+  e.preventDefault(); const code = one($("fgUser").value); if (!code){ $("fgErr").textContent = "Vui lòng nhập email."; return; }
   $("fgBtn").disabled = true;
-  try { await rpc("onemsg_request_reset", {p_username:code}); $("dlgForgot").close(); toast("Đã gửi yêu cầu. Quản trị viên sẽ liên hệ để cấp mật khẩu mới.", 7000); }
+  try { await rpc("phkh_request_reset", {p_login:code}); $("dlgForgot").close(); toast("Đã gửi yêu cầu. Quản trị viên sẽ liên hệ để cấp mật khẩu mới.", 7000); }
   catch(err){ $("fgErr").textContent = err.message==="NETWORK" ? "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại." : "Chưa gửi được yêu cầu. Hãy liên hệ trực tiếp quản trị viên."; }
   finally { $("fgBtn").disabled = false; }
 };
